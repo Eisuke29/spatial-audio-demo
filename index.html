@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>立体音響デモ</title>
+<style>
+/* 上から見た円と操作パネルの2カラム。狭い画面では縦に並ぶ */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --fg:#18202b; --muted:#5a6578; --line:#d6dbe3;
+  --head:#18202b; --src:#a8561c; --src-tint:rgba(168,86,28,.14);
+  --real:#1d7564; --guess:#3a55a8; --ring:#e3e7ee;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#11151b; --surface:#1a2029; --fg:#e5e9ef; --muted:#9aa4b5; --line:#2d3542;
+  --head:#e5e9ef; --src:#ef9a5f; --src-tint:rgba(239,154,95,.18);
+  --real:#58c4ad; --guess:#8ea6ef; --ring:#252c37;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;font-size:15px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+h1{font-size:22px;margin:0}
+.lead{color:var(--muted);margin:0;font-size:14px}
+.main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.main{grid-template-columns:1fr}}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+canvas{width:100%;aspect-ratio:1/1;display:block;touch-action:none;cursor:crosshair;border-radius:8px}
+.readout{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 16px}
+.panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card h2{font-size:14px;margin:0;color:var(--muted);letter-spacing:.04em}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label{font-size:14px}
+select,input[type=range]{font:inherit}
+input[type=range]{width:100%}
+button{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--fg)}
+button.primary{background:var(--src);border-color:var(--src);color:#fff;font-weight:700}
+button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--guess);outline-offset:2px}
+.field{display:grid;grid-template-columns:7.5em 1fr;gap:8px;align-items:center}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.result{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;white-space:pre-wrap;margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>立体音響デモ</h1>
+  <p class="lead">上から見た図です。真ん中があなたの頭で、上が正面です。円の中をクリック（ドラッグも可）すると、その場所から音が鳴ります。<b>ヘッドホンかイヤホンを使ってください。</b></p>
+
+  <div class="main">
+    <div class="stage">
+      <canvas id="view" width="800" height="800" aria-label="上から見た空間。クリックした場所に音源を置く"></canvas>
+      <div class="readout" id="readout">音源：未設定</div>
+    </div>
+
+    <div class="panel">
+      <div class="card">
+        <div class="row">
+          <button id="play" class="primary">▶ 鳴らす</button>
+          <span class="note" id="state">停止中</span>
+        </div>
+        <div class="field"><label for="sound">音の種類</label>
+          <select id="sound">
+            <option value="beep">ピッ音（くり返し）</option>
+            <option value="noise">ノイズ（ザー）</option>
+            <option value="click">カチカチ（時計）</option>
+            <option value="tone">持続音（ポー）</option>
+          </select></div>
+        <div class="field"><label for="vol">音量</label><input id="vol" type="range" min="0" max="1" step="0.01" value="0.6"></div>
+        <div class="field"><label for="height">高さ</label><input id="height" type="range" min="-60" max="60" step="1" value="0"></div>
+      </div>
+
+      <div class="card">
+        <h2>立体音響の設定</h2>
+        <div class="field"><label for="model">方式</label>
+          <select id="model">
+            <option value="HRTF">HRTF（頭と耳の形を再現）</option>
+            <option value="equalpower">左右の振り分けだけ</option>
+          </select></div>
+        <div class="field"><label for="dist">距離で小さく</label>
+          <select id="dist">
+            <option value="inverse">する（自然な減り方）</option>
+            <option value="linear">する（直線的）</option>
+            <option value="none">しない</option>
+          </select></div>
+        <div class="field"><label for="radius">表示する広さ</label>
+          <select id="radius">
+            <option value="1">半径1m</option>
+            <option value="1.5" selected>半径1.5m</option>
+            <option value="3">半径3m</option>
+          </select></div>
+      </div>
+
+      <div class="card">
+        <h2>配置プリセット</h2>
+        <div class="row">
+          <button data-preset="front">正面</button>
+          <button data-preset="right">真右</button>
+          <button data-preset="back">真後ろ</button>
+          <button data-preset="arc">右側にA・P・B</button>
+        </div>
+        <p class="note">「右側にA・P・B」は、体の右側の弧にVRの道具A・B（オレンジの輪）と本物P（緑の四角）を置きます。印をクリックすると、その場所から鳴ります。</p>
+      </div>
+
+      <div class="card">
+        <h2>当てっこモード</h2>
+        <div class="row">
+          <button id="quiz" aria-pressed="false">開始</button>
+          <button id="quizNext" hidden>次の問題</button>
+        </div>
+        <p class="note">音源の場所を隠してランダムに鳴らします。聞こえたと思う場所をクリックすると、正解とのずれを表示します。</p>
+        <pre class="result" id="quizResult"></pre>
+      </div>
+    </div>
+  </div>
+  <p class="note">しくみ：Web Audio APIのPannerNode（HRTF）で、聞く人を中心に置き、音源の位置を変えています。高さは上が＋です。</p>
+</div>
+
+<script>
+(() => {
+  const cv = document.getElementById('view');
+  const ctx2d = cv.getContext('2d');
+  const $ = id => document.getElementById(id);
+
+  // ---- 状態 ----
+  let R = 1.5;                 // 表示する半径（m）
+  let src = null;              // {x, z} x:右+  z:前+（m）
+  let markers = [];            // プリセットの印 [{x,z,label,kind}]
+  let quiz = {on:false, answer:null, guess:null, log:[]};
+
+  // ---- 音 ----
+  let ac = null, panner = null, gain = null, node = null, playing = false;
+  const buffers = {};
+
+  function makeBuffers(){
+    const sr = ac.sampleRate;
+    // ピッ音：880Hz 0.1秒 + 無音 0.35秒
+    {
+      const len = Math.floor(sr*0.45), b = ac.createBuffer(1,len,sr), d = b.getChannelData(0);
+      const on = Math.floor(sr*0.1);
+      for(let i=0;i<on;i++){ const env = Math.min(1, i/200, (on-i)/200); d[i] = Math.sin(2*Math.PI*880*i/sr)*env*0.8; }
+      buffers.beep = b;
+    }
+    // ピンクノイズ 2秒
+    {
+      const len = sr*2, b = ac.createBuffer(1,len,sr), d = b.getChannelData(0);
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for(let i=0;i<len;i++){
+        const w = Math.random()*2-1;
+        b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.96900*b2+w*0.1538520;
+        b3=0.86650*b3+w*0.3104856; b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+        d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+      }
+      // つなぎ目のプチ音を減らす
+      const f = Math.floor(sr*0.01);
+      for(let i=0;i<f;i++){ d[i]*=i/f; d[len-1-i]*=i/f; }
+      buffers.noise = b;
+    }
+    // カチカチ：0.5秒ごとの短い打撃音
+    {
+      const len = Math.floor(sr*0.5), b = ac.createBuffer(1,len,sr), d = b.getChannelData(0);
+      const n = Math.floor(sr*0.015);
+      for(let i=0;i<n;i++){ d[i] = (Math.random()*2-1)*Math.exp(-i/(sr*0.002))*0.9; }
+      buffers.click = b;
+    }
+    // 持続音：440Hz（ちょうど整数周期で1秒）
+    {
+      const len = sr, b = ac.createBuffer(1,len,sr), d = b.getChannelData(0);
+      for(let i=0;i<len;i++) d[i] = Math.sin(2*Math.PI*440*i/sr)*0.5;
+      buffers.tone = b;
+    }
+  }
+
+  function ensureAudio(){
+    if(ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    const L = ac.listener;
+    if(L.forwardX){ L.forwardX.value=0; L.forwardY.value=0; L.forwardZ.value=-1; L.upX.value=0; L.upY.value=1; L.upZ.value=0; L.positionX.value=0; L.positionY.value=0; L.positionZ.value=0; }
+    else { L.setOrientation(0,0,-1,0,1,0); L.setPosition(0,0,0); }
+    panner = ac.createPanner();
+    gain = ac.createGain();
+    panner.connect(gain).connect(ac.destination);
+    makeBuffers();
+    applySettings();
+    updatePanner(true);
+  }
+
+  function applySettings(){
+    if(!ac) return;
+    panner.panningModel = $('model').value;
+    const dm = $('dist').value;
+    panner.refDistance = 0.3;
+    panner.maxDistance = 10;
+    if(dm === 'none'){ panner.distanceModel = 'inverse'; panner.rolloffFactor = 0; }
+    else if(dm === 'linear'){ panner.distanceModel = 'linear'; panner.rolloffFactor = 1; panner.maxDistance = R*1.2; }
+    else { panner.distanceModel = 'inverse'; panner.rolloffFactor = 1; }
+    gain.gain.setTargetAtTime(parseFloat($('vol').value), ac.currentTime, 0.02);
+  }
+
+  function heightM(){ return parseFloat($('height').value)/100; }
+
+  function updatePanner(immediate){
+    if(!ac || !src) return;
+    // Web Audioの座標：x右+、y上+、z後ろ+（正面は -z）
+    const x = src.x, y = heightM(), z = -src.z;
+    if(panner.positionX){
+      const t = ac.currentTime;
+      if(immediate){ panner.positionX.value=x; panner.positionY.value=y; panner.positionZ.value=z; }
+      else { panner.positionX.setTargetAtTime(x,t,0.015); panner.positionY.setTargetAtTime(y,t,0.015); panner.positionZ.setTargetAtTime(z,t,0.015); }
+    } else panner.setPosition(x,y,z);
+  }
+
+  function startSound(){
+    ensureAudio();
+    if(ac.state === 'suspended') ac.resume();
+    stopSound(true);
+    node = ac.createBufferSource();
+    node.buffer = buffers[$('sound').value];
+    node.loop = true;
+    node.connect(panner);
+    node.start();
+    playing = true;
+    $('play').textContent = '■ 止める';
+    $('state').textContent = src ? '再生中' : '再生中（円の中をクリックして音源を置いてください）';
+  }
+  function stopSound(silent){
+    if(node){ try{node.stop();}catch(e){} node.disconnect(); node = null; }
+    playing = false;
+    if(!silent){ $('play').textContent = '▶ 鳴らす'; $('state').textContent = '停止中'; }
+  }
+
+  // ---- 描画 ----
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function toPx(x,z){ const s = cv.width/2/R*0.92; return [cv.width/2 + x*s, cv.height/2 - z*s]; }
+  function toM(px,py){ const s = cv.width/2/R*0.92; return {x:(px-cv.width/2)/s, z:(cv.height/2-py)/s}; }
+
+  function draw(){
+    const W = cv.width, H = cv.height, c = ctx2d;
+    c.clearRect(0,0,W,H);
+    c.fillStyle = css('--surface'); c.fillRect(0,0,W,H);
+    // 同心円（0.5mごと）
+    c.lineWidth = 2; c.font = '22px system-ui, sans-serif'; c.textAlign='left'; c.textBaseline='middle';
+    for(let r=0.5;r<=R+1e-6;r+=0.5){
+      const [, py] = toPx(0,r); const rad = H/2-py;
+      c.strokeStyle = css('--ring'); c.beginPath(); c.arc(W/2,H/2,rad,0,Math.PI*2); c.stroke();
+      c.fillStyle = css('--muted'); c.fillText(r.toFixed(1)+'m', W/2+6, py+14);
+    }
+    // 十字と方向
+    c.strokeStyle = css('--ring'); c.beginPath(); c.moveTo(W/2,0); c.lineTo(W/2,H); c.moveTo(0,H/2); c.lineTo(W,H/2); c.stroke();
+    c.fillStyle = css('--muted'); c.textAlign='center';
+    c.fillText('正面', W/2, 24); c.fillText('後ろ', W/2, H-22);
+    c.textAlign='left'; c.fillText('左', 10, H/2-18); c.textAlign='right'; c.fillText('右', W-10, H/2-18);
+    // 頭
+    const hr = 34;
+    c.fillStyle = css('--surface'); c.strokeStyle = css('--head'); c.lineWidth = 3;
+    c.beginPath(); c.arc(W/2,H/2,hr,0,Math.PI*2); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(W/2-12,H/2-hr+4); c.lineTo(W/2,H/2-hr-14); c.lineTo(W/2+12,H/2-hr+4); c.stroke(); // 鼻
+    c.fillStyle = css('--head');
+    c.fillRect(W/2-hr-8,H/2-10,8,20); c.fillRect(W/2+hr,H/2-10,8,20); // 耳
+    // プリセットの印
+    for(const m of markers){
+      const [px,py] = toPx(m.x,m.z);
+      if(m.kind==='real'){ c.fillStyle = css('--real'); c.fillRect(px-14,py-14,28,28); }
+      else { c.strokeStyle = css('--src'); c.lineWidth = 3; c.beginPath(); c.arc(px,py,16,0,Math.PI*2); c.stroke(); }
+      c.fillStyle = m.kind==='real' ? css('--real') : css('--src');
+      c.textAlign='left'; c.font='bold 22px system-ui, sans-serif'; c.fillText(m.label, px+22, py);
+      c.font = '22px system-ui, sans-serif';
+    }
+    // 当てっこの答え合わせ
+    if(quiz.on && quiz.guess){
+      const [gx,gy] = toPx(quiz.guess.x,quiz.guess.z);
+      const [ax,ay] = toPx(quiz.answer.x,quiz.answer.z);
+      c.strokeStyle = css('--muted'); c.setLineDash([8,8]); c.lineWidth=2; c.beginPath(); c.moveTo(gx,gy); c.lineTo(ax,ay); c.stroke(); c.setLineDash([]);
+      c.fillStyle = css('--guess'); c.beginPath(); c.arc(gx,gy,10,0,Math.PI*2); c.fill();
+      c.fillStyle = css('--src'); c.beginPath(); c.arc(ax,ay,12,0,Math.PI*2); c.fill();
+    }
+    // 音源（当てっこ中は隠す）
+    if(src && !quiz.on){
+      const [px,py] = toPx(src.x,src.z);
+      c.fillStyle = css('--src-tint'); c.beginPath(); c.arc(px,py,30,0,Math.PI*2); c.fill();
+      c.fillStyle = css('--src'); c.beginPath(); c.arc(px,py,12,0,Math.PI*2); c.fill();
+    }
+  }
+
+  function describe(p){
+    const d = Math.hypot(p.x,p.z);
+    let az = Math.atan2(p.x,p.z)*180/Math.PI; // 正面0°、右が＋
+    return {d, az};
+  }
+  function updateReadout(){
+    if(!src || quiz.on){ $('readout').textContent = quiz.on ? '音源：かくしています' : '音源：未設定'; return; }
+    const {d,az} = describe(src);
+    const side = Math.abs(az)<0.5 ? '正面' : (az>0 ? `右へ${az.toFixed(0)}°` : `左へ${(-az).toFixed(0)}°`);
+    $('readout').textContent = `方向：${side}　距離：${(d*100).toFixed(0)}cm　高さ：${$('height').value}cm　（x=${(src.x*100).toFixed(0)}, 前=${(src.z*100).toFixed(0)} cm）`;
+  }
+
+  function setSource(p){
+    src = p; updatePanner(false); updateReadout(); draw();
+    if(playing) $('state').textContent = '再生中';
+  }
+
+  // ---- 入力 ----
+  let dragging = false;
+  function evPos(e){
+    const r = cv.getBoundingClientRect();
+    return toM((e.clientX-r.left)*cv.width/r.width, (e.clientY-r.top)*cv.height/r.height);
+  }
+  function hitMarker(p){
+    for(const m of markers) if(Math.hypot(m.x-p.x,m.z-p.z) < R*0.06) return m;
+    return null;
+  }
+  cv.addEventListener('pointerdown', e => {
+    const p = evPos(e);
+    if(quiz.on){
+      if(quiz.guess) return;
+      quiz.guess = p; showQuizResult(); draw(); return;
+    }
+    const m = hitMarker(p);
+    if(m){ setSource({x:m.x,z:m.z}); }
+    else { setSource(p); dragging = true; cv.setPointerCapture(e.pointerId); }
+    if(!playing) startSound();
+  });
+  cv.addEventListener('pointermove', e => { if(dragging) setSource(evPos(e)); });
+  cv.addEventListener('pointerup', () => { dragging = false; });
+  cv.addEventListener('pointercancel', () => { dragging = false; });
+
+  $('play').addEventListener('click', () => { playing ? stopSound() : startSound(); });
+  $('sound').addEventListener('change', () => { if(playing) startSound(); });
+  $('vol').addEventListener('input', applySettings);
+  $('model').addEventListener('change', applySettings);
+  $('dist').addEventListener('change', applySettings);
+  $('height').addEventListener('input', () => { updatePanner(false); updateReadout(); });
+  $('radius').addEventListener('change', () => { R = parseFloat($('radius').value); applySettings(); draw(); });
+
+  function polar(azDeg, dist){ const a = azDeg*Math.PI/180; return {x:Math.sin(a)*dist, z:Math.cos(a)*dist}; }
+  document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.preset;
+    if(k==='arc'){
+      // 右側の弧（距離0.5m）に A(70°)・P(90°)・B(110°)
+      const A = polar(70,0.5), P = polar(90,0.5), B = polar(110,0.5);
+      markers = [{...A,label:'A',kind:'virtual'},{...P,label:'P（本物）',kind:'real'},{...B,label:'B',kind:'virtual'}];
+      setSource({x:A.x,z:A.z});
+    } else {
+      markers = [];
+      setSource(k==='front' ? polar(0,0.8) : k==='right' ? polar(90,0.8) : polar(180,0.8));
+    }
+    if(!playing) startSound();
+  }));
+
+  // ---- 当てっこモード ----
+  function newQuestion(){
+    const az = Math.random()*360-180, d = 0.4 + Math.random()*(Math.min(R,1.5)-0.4);
+    quiz.answer = polar(az,d); quiz.guess = null;
+    src = quiz.answer; updatePanner(true); updateReadout();
+    $('quizResult').textContent = '聞こえたと思う場所をクリックしてください';
+    $('quizNext').hidden = true;
+    draw();
+    startSound();
+  }
+  function showQuizResult(){
+    const a = describe(quiz.answer), g = describe(quiz.guess);
+    let dAz = g.az - a.az; while(dAz>180) dAz-=360; while(dAz<-180) dAz+=360;
+    const err = Math.hypot(quiz.guess.x-quiz.answer.x, quiz.guess.z-quiz.answer.z);
+    quiz.log.push({dAz:Math.abs(dAz), dd:Math.abs(g.d-a.d), err});
+    const n = quiz.log.length, mean = k => quiz.log.reduce((s,v)=>s+v[k],0)/n;
+    $('quizResult').textContent =
+      `今回：方向のずれ ${Math.abs(dAz).toFixed(0)}°／距離のずれ ${(Math.abs(g.d-a.d)*100).toFixed(0)}cm／位置のずれ ${(err*100).toFixed(0)}cm\n` +
+      `${n}問の平均：方向 ${mean('dAz').toFixed(0)}°／距離 ${(mean('dd')*100).toFixed(0)}cm／位置 ${(mean('err')*100).toFixed(0)}cm\n` +
+      `（オレンジが正解、青があなたの答え）`;
+    $('quizNext').hidden = false;
+  }
+  $('quiz').addEventListener('click', () => {
+    quiz.on = !quiz.on;
+    $('quiz').setAttribute('aria-pressed', String(quiz.on));
+    $('quiz').textContent = quiz.on ? '終了' : '開始';
+    if(quiz.on){ markers = []; quiz.log = []; newQuestion(); }
+    else { quiz.guess = null; $('quizNext').hidden = true; $('quizResult').textContent = ''; updateReadout(); draw(); }
+  });
+  $('quizNext').addEventListener('click', newQuestion);
+
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', draw);
+  draw();
+})();
+</script>
+</body>
+</html>

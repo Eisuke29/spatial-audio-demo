@@ -80,33 +80,16 @@ table.heat{border-collapse:separate;border-spacing:3px;font-size:12px;width:100%
 
   <div class="card">
     <h2><span class="n">2</span>本物Pの位置<span id="pSt" class="ng">未登録</span></h2>
-    <p class="muted" style="margin:0 0 8px">机にスタート印と本物の物を置き、マウスを<b>スタート印から物までドラッグ</b>して記録します。</p>
-    <div class="btns"><button class="btn" id="regP">ドラッグで記録する</button></div>
-    <div class="row"><span>スタート→Pの実際の距離</span><span><input type="number" id="pcm" min="10" max="90" value="45"> cm</span></div>
-    <p class="muted" id="pInfo" style="margin:0"></p>
+    <p class="muted" style="margin:0 0 8px" id="pInfo">右の図をクリックすると、最初にPを記録します。</p>
+    <div class="btns"><button class="btn sub small" id="regP" hidden>Pを記録し直す</button></div>
   </div>
 
   <div class="card">
-    <h2><span class="n">3</span>試し方</h2>
-    <div class="seg" id="mode"><button data-v="auto" aria-pressed="true">自動で順番に</button><button data-v="manual" aria-pressed="false">手動で選ぶ</button></div>
-
-    <div id="autoBox">
-      <div class="row" style="margin-top:12px"><b style="font-size:12px">使う条件</b><span class="muted">押して外せる</span></div>
-      <div class="grid7" id="condGrid"></div>
-      <div class="row"><b style="font-size:12px">ずらす角度（AとPの差）</b></div>
-      <div class="chips" id="angChips"></div>
-      <div class="row"><span class="muted">各組み合わせの回数</span><input type="number" id="reps" min="1" max="5" value="1"></div>
-      <div class="row"><label class="muted"><input type="checkbox" id="blind" checked> 条件を伏せる（結果で答え合わせ）</label></div>
-      <div class="prog"><i id="progBar"></i></div>
-      <div class="row" style="margin:0"><span class="muted" id="progTxt"></span><button class="btn sub small" id="restart">最初から</button></div>
-    </div>
-
-    <div id="manualBox" hidden>
-      <div class="grid7" id="condGridM"></div>
-      <div class="row"><b style="font-size:12px">ずらす角度</b><b id="angOut"></b></div>
-      <input type="range" id="angM" min="-45" max="45" step="1" value="20">
-      <div class="muted">マイナス＝AがPより左、プラス＝右</div>
-    </div>
+    <h2><span class="n">3</span>次の1回の条件</h2>
+    <div class="grid7" id="condGridM"></div>
+    <div class="row"><b style="font-size:12px">ずらす角度（AとPの差）</b><b id="angOut"></b></div>
+    <div class="chips" id="angChips"></div>
+    <div class="seg" id="side" style="margin-top:8px"><button data-v="-1" aria-pressed="false">Aを左へ</button><button data-v="1" aria-pressed="true">Aを右へ</button></div>
   </div>
 
   <details class="card muted"><summary style="cursor:pointer"><b>角度の根拠（先行研究）</b></summary>
@@ -166,71 +149,49 @@ const CONDS = [
 const CMAP = Object.fromEntries(CONDS.map(c => [c.id, c]));
 const LEVELS = [0, 5, 10, 15, 20, 30, 40];
 
-let settings = Object.assign({ conds: CONDS.map(c => c.id), levels: [0, 5, 10, 20, 30, 40], reps: 1, blind: true, mode: 'auto', manualCond: 'W-c', manualAng: 20 }, store.get('ar.settings', {}));
-let reg = store.get('ar.reg', null);          // { Pc:{x,y}（マウスの移動量）, cm }
+let settings = Object.assign({ cond: 'W-c', ang: 20, side: 1 }, store.get('ar.sel', {}));
+let reg = store.get('ar.reg2', null);          // { Pc:{x,y} マウスの移動量 }
 let phonesOk = store.get('ar.phones', false);
-let history = store.get('ar.history', []);
-let plan = store.get('ar.plan', null);        // { trials:[{cond,ang}], i }
+let history = store.get('ar.history2', []);
+const ARM_CM = 45; // なぞった長さ＝腕を伸ばした長さ（約45cm）とみなす
 
-// ===== 左パネル =====
-function buildGrid(el, manual) {
+// ===== 左パネル（次の1回の条件） =====
+(function buildGrid(el) {
   el.innerHTML = '<span></span><span class="h">鳴りっぱなし</span><span class="h">バックセンサー</span>';
-  const rows = [['なし', ['none']], ['A', ['A-c', 'A-s']], ['ワーピング', ['W-c', 'W-s']], ['P', ['P-c', 'P-s']]];
-  rows.forEach(([lab, ids]) => {
+  [['なし', ['none']], ['A', ['A-c', 'A-s']], ['ワーピング', ['W-c', 'W-s']], ['P', ['P-c', 'P-s']]].forEach(([lab, ids]) => {
     el.insertAdjacentHTML('beforeend', `<span>${lab}</span>`);
     ids.forEach(id => {
       const b = document.createElement('button'); b.className = 'cell' + (ids.length === 1 ? ' wide' : ''); b.dataset.id = id;
       b.textContent = id === 'none' ? '音なし' : (CMAP[id].type === 'c' ? '鳴りっぱなし' : 'バックセンサー');
-      b.onclick = () => {
-        if (busy()) return;
-        if (manual) settings.manualCond = id;
-        else { const s = new Set(settings.conds); s.has(id) ? s.delete(id) : s.add(id); if (!s.size) return; settings.conds = CONDS.map(c => c.id).filter(x => s.has(x)); plan = null; }
-        save(); syncPanel(); render();
-      };
+      b.onclick = () => { if (busy()) return; settings.cond = id; save(); syncPanel(); render(); };
       el.appendChild(b);
     });
   });
-}
-buildGrid($('condGrid'), false); buildGrid($('condGridM'), true);
+})($('condGridM'));
 LEVELS.forEach(a => {
-  const b = document.createElement('button'); b.className = 'chip'; b.dataset.a = a; b.textContent = a ? `±${a}°` : '0°';
-  b.onclick = () => { if (busy()) return; const s = new Set(settings.levels); s.has(a) ? s.delete(a) : s.add(a); if (!s.size) return; settings.levels = LEVELS.filter(x => s.has(x)); plan = null; save(); syncPanel(); render(); };
+  const b = document.createElement('button'); b.className = 'chip'; b.dataset.a = a; b.textContent = a + '°';
+  b.onclick = () => { if (busy()) return; settings.ang = a; save(); syncPanel(); render(); };
   $('angChips').appendChild(b);
 });
-$('mode').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; settings.mode = b.dataset.v; save(); syncPanel(); render(); });
-$('reps').oninput = () => { settings.reps = clamp(Number($('reps').value) || 1, 1, 5); plan = null; save(); syncPanel(); render(); };
-$('blind').onchange = () => { settings.blind = $('blind').checked; save(); render(); };
-$('angM').oninput = () => { settings.manualAng = Number($('angM').value); save(); syncPanel(); render(); };
-$('restart').onclick = () => { if (busy()) return; plan = null; save(); syncPanel(); render(); };
-$('pcm').oninput = () => { if (reg) { reg.cm = clamp(Number($('pcm').value) || 45, 10, 90); store.set('ar.reg', reg); } syncPanel(); draw(); };
+$('side').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; settings.side = Number(b.dataset.v); save(); syncPanel(); render(); });
+$('regP').onclick = () => { if (busy()) return; reg = null; store.set('ar.reg2', null); syncPanel(); render(); };
 $('vol').oninput = () => { if (master) master.gain.value = Number($('vol').value); };
-$('clearAll').onclick = () => { if (busy()) return; if (confirm('今までの結果を消しますか？')) { history = []; plan = null; save(); renderHeat(); syncPanel(); render(); } };
+$('clearAll').onclick = () => { if (busy()) return; if (confirm('今までの結果を消しますか？')) { history = []; save(); renderHeat(); } };
 
-function save() { store.set('ar.settings', settings); store.set('ar.plan', plan); store.set('ar.history', history); }
-function makePlan() {
-  const t = [];
-  for (let r = 0; r < settings.reps; r++) for (const c of settings.conds) for (const a of settings.levels) t.push({ cond: c, ang: a === 0 ? 0 : a * (Math.random() < 0.5 ? -1 : 1) });
-  for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; }
-  return { trials: t, i: 0 };
-}
+const signedAng = () => settings.ang * settings.side;
+function save() { store.set('ar.sel', settings); store.set('ar.history2', history); }
 function syncPanel() {
   $('phSt').textContent = phonesOk ? '確認済み' : '未確認'; $('phSt').className = phonesOk ? 'ok' : 'ng';
   $('pSt').textContent = reg ? '記録済み' : '未登録'; $('pSt').className = reg ? 'ok' : 'ng';
-  $('regP').textContent = reg ? 'ドラッグで記録し直す' : 'ドラッグで記録する';
-  if (reg) { $('pcm').value = reg.cm; const ph = Math.atan2(reg.Pc.x, reg.Pc.y) * 180 / Math.PI;
-    $('pInfo').textContent = `Pの向き：正面から${Math.abs(ph).toFixed(0)}°${ph > 0.5 ? '右' : ph < -0.5 ? '左' : ''}、距離 ${reg.cm} cm`; }
-  else $('pInfo').textContent = '';
-  $('mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === settings.mode)));
-  $('autoBox').hidden = settings.mode !== 'auto'; $('manualBox').hidden = settings.mode !== 'manual';
-  $('condGrid').querySelectorAll('.cell').forEach(b => b.setAttribute('aria-pressed', String(settings.conds.includes(b.dataset.id))));
-  $('condGridM').querySelectorAll('.cell').forEach(b => b.setAttribute('aria-pressed', String(settings.manualCond === b.dataset.id)));
-  $('angChips').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(settings.levels.includes(Number(b.dataset.a)))));
-  $('reps').value = settings.reps; $('blind').checked = settings.blind;
-  $('angM').value = settings.manualAng; $('angOut').textContent = `${settings.manualAng > 0 ? '+' : ''}${settings.manualAng}°`;
-  if (!plan) { plan = makePlan(); save(); }
-  const n = plan.trials.length;
-  $('progBar').style.width = (plan.i / n * 100) + '%';
-  $('progTxt').textContent = plan.i >= n ? `全${n}回 終わりました` : `${plan.i} / ${n} 回（${settings.conds.length}条件 × ${settings.levels.length}角度 × ${settings.reps}回）`;
+  $('regP').hidden = !reg;
+  if (reg) { const ph = Math.atan2(reg.Pc.x, reg.Pc.y) * 180 / Math.PI;
+    $('pInfo').textContent = `記録済み：Pは正面から${Math.abs(ph).toFixed(0)}°${ph > 0.5 ? '右' : ph < -0.5 ? '左' : ''}。なぞった長さを腕の長さ（約${ARM_CM}cm）として音を作ります。`; }
+  else $('pInfo').textContent = '右の図をクリックすると、最初にPを記録します。';
+  $('condGridM').querySelectorAll('.cell').forEach(b => b.setAttribute('aria-pressed', String(settings.cond === b.dataset.id)));
+  $('angChips').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(settings.ang === Number(b.dataset.a))));
+  $('side').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(settings.ang !== 0 && settings.side === Number(b.dataset.v))));
+  $('side').style.opacity = settings.ang === 0 ? 0.4 : 1;
+  $('angOut').textContent = settings.ang === 0 ? '0°（ずらさない）' : `${settings.ang}°　Aを${settings.side > 0 ? '右' : '左'}へ`;
 }
 
 // ===== 音 =====
@@ -294,30 +255,33 @@ function soundNow() {
 }
 
 // ===== 状態とマウス =====
+// idle（固定なし）→ クリック → [Pが未登録なら reg0 → reg1] → atStart → listen → reach → answer → result（固定を外す）→ クリック → atStart …
 const cv = $('cv'), ctx = cv.getContext('2d');
-let state = 'idle'; // idle | reg0 | reg1 | listen | reach | answer | result
+let state = 'idle';
 let trial = null, last = null, hand = { x: 0, y: 0 }, regRaw = { x: 0, y: 0 }, regPath = [], timers = [], note = '';
-const busy = () => ['reg0', 'reg1', 'listen', 'reach', 'answer'].includes(state);
+const busy = () => ['reg0', 'reg1', 'atStart', 'listen', 'reach', 'answer'].includes(state);
 const locked = () => document.pointerLockElement === cv;
-const cmPerCount = () => reg ? reg.cm / Math.hypot(reg.Pc.x, reg.Pc.y) : 0.03;
+const cmPerCount = () => reg ? ARM_CM / Math.hypot(reg.Pc.x, reg.Pc.y) : 0.03;
 function lock() {
   ensureAudio();
   try { const r = cv.requestPointerLock({ unadjustedMovement: true }); if (r && r.catch) r.catch(() => { try { cv.requestPointerLock(); } catch {} }); }
   catch { cv.requestPointerLock(); }
 }
+let lockedAt = 0;
 document.addEventListener('pointerlockerror', () => { note = 'マウスを固定できませんでした。1秒待ってもう一度クリックしてください。'; render(); });
 document.addEventListener('pointerlockchange', () => {
-  if (!locked() && busy()) {
-    stopLoop(); clearTimers();
-    if (state === 'reg0' || state === 'reg1') { state = 'idle'; note = '記録を中止しました'; }
-    else { trial = null; state = 'idle'; note = '中断しました（同じ回をやり直します）'; }
+  if (locked()) {
+    lockedAt = performance.now();
+    if (state === 'idle' || state === 'result') { state = reg ? 'atStart' : 'reg0'; note = ''; }
+  } else if (busy()) {
+    stopLoop(); clearTimers(); trial = null; state = 'idle';
+    note = 'Escで止めました。もう一度クリックで再開';
   }
   render();
 });
-cv.addEventListener('click', () => { if (!locked()) lock(); });
+cv.addEventListener('click', () => { if (!locked() && (state === 'idle' || state === 'result')) lock(); });
 cv.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('contextmenu', e => { if (locked()) e.preventDefault(); });
-$('regP').onclick = () => { if (busy()) return; ensureAudio(); state = 'reg0'; note = ''; render(); };
 
 document.addEventListener('mousemove', e => {
   if (!locked()) return;
@@ -327,20 +291,18 @@ document.addEventListener('mousemove', e => {
     trial.path.push({ ...hand }); const s = srcPos(); if (s && CMAP[trial.cond].loc) trial.src.push({ ...s });
   }
 });
-let lockedAt = 0;
-document.addEventListener('pointerlockchange', () => { if (locked()) lockedAt = performance.now(); });
 document.addEventListener('mousedown', e => {
-  if (!locked() || performance.now() - lockedAt < 150) return; // 固定したクリック自体は無視
+  if (!locked() || performance.now() - lockedAt < 200) return; // 固定したときのクリックは無視
   if (state === 'reg0' && e.button === 0) { state = 'reg1'; regRaw = { x: 0, y: 0 }; regPath = [{ x: 0, y: 0 }]; render(); return; }
+  if (state === 'atStart' && e.button === 0) { startTrial(); return; }
   if (state === 'reach') { endReach(); return; }
   if (state === 'answer') { answer(e.button === 0 ? 'yes' : e.button === 2 ? 'no' : 'unsure'); return; }
-  if ((state === 'idle' || state === 'result') && e.button === 0) startTrial();
 });
 document.addEventListener('mouseup', () => {
   if (state !== 'reg1') return;
-  if (Math.hypot(regRaw.x, regRaw.y) < 30) { state = 'reg0'; note = '短すぎます。スタート印から物までドラッグしてください'; render(); return; }
-  reg = { Pc: { ...regRaw }, cm: clamp(Number($('pcm').value) || 45, 10, 90) };
-  store.set('ar.reg', reg); state = 'idle'; note = 'Pを記録しました。スタート印に戻してクリックで1回目'; syncPanel(); render();
+  if (Math.hypot(regRaw.x, regRaw.y) < 30) { state = 'reg0'; note = '短すぎました。もう一度、スタート印から物までなぞってください'; render(); return; }
+  reg = { Pc: { ...regRaw } }; store.set('ar.reg2', reg);
+  state = 'atStart'; note = 'Pを記録しました'; syncPanel(); render();
 });
 document.addEventListener('keydown', e => {
   if (state === 'answer' && ['Digit1', 'Digit2', 'Digit3'].includes(e.code)) answer({ Digit1: 'yes', Digit2: 'no', Digit3: 'unsure' }[e.code]);
@@ -349,18 +311,10 @@ document.addEventListener('keydown', e => {
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 function later(f, ms) { timers.push(setTimeout(f, ms)); }
 function rot(p, deg) { const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return { x: p.x * c + p.y * s, y: -p.x * s + p.y * c }; } // 上から見て時計回り（右）が＋
-function currentSpec() {
-  if (settings.mode === 'manual') return { cond: settings.manualCond, ang: settings.manualAng, blind: false };
-  if (!plan) plan = makePlan();
-  if (plan.i >= plan.trials.length) return null;
-  return { ...plan.trials[plan.i], blind: settings.blind };
-}
 function startTrial() {
-  if (!reg) { note = '先に左の「2 本物Pの位置」を記録してください'; render(); return; }
-  const spec = currentSpec(); if (!spec) { note = '全部終わりました。「最初から」で新しく始められます'; render(); return; }
   ensureAudio(); clearTimers(); note = '';
-  const k = cmPerCount(), P = { x: reg.Pc.x * k, y: reg.Pc.y * k }, A = rot(P, spec.ang);
-  trial = { ...spec, P, A, path: [{ x: 0, y: 0 }], src: [] };
+  const k = cmPerCount(), P = { x: reg.Pc.x * k, y: reg.Pc.y * k }, ang = signedAng(), A = rot(P, ang);
+  trial = { cond: settings.cond, ang, P, A, path: [{ x: 0, y: 0 }], src: [] };
   hand = { x: 0, y: 0 }; state = 'listen'; startLoop(); render();
   later(() => { stopLoop(); }, 1900);
   later(() => { hand = { x: 0, y: 0 }; trial.path = [{ x: 0, y: 0 }]; state = 'reach'; beep(); trial.t0 = performance.now(); later(startLoop, 120); render(); }, 2400);
@@ -376,9 +330,10 @@ function answer(v) {
   t.pull = t.ang ? (aE - aA) / (aP - aA) : null;     // 0=A, 1=P
   t.distP = Math.hypot(t.E.x - t.P.x, t.E.y - t.P.y);
   t.reach = Math.hypot(t.E.x, t.E.y);
-  history.push({ cond: t.cond, ang: t.ang, pull: t.pull, devA: t.devA, distP: t.distP, reach: t.reach, noticed: v, ms: Math.round(t.ms), mode: settings.mode, time: Date.now() });
-  if (settings.mode === 'auto' && plan) plan.i++;
-  last = t; trial = null; state = 'result'; save(); syncPanel(); showResult(); renderHeat(); render();
+  history.push({ cond: t.cond, ang: t.ang, pull: t.pull, devA: t.devA, distP: t.distP, reach: t.reach, noticed: v, ms: Math.round(t.ms), time: Date.now() });
+  last = t; trial = null; state = 'result'; save(); showResult(); renderHeat();
+  if (document.pointerLockElement) document.exitPointerLock();
+  render();
 }
 
 // ===== 結果 =====
@@ -389,7 +344,7 @@ function showResult() {
     : `${Math.round(t.pull * 100)}%<small>Pへ引っぱられた</small>`;
   const verdict = t.pull === null ? '' : t.pull >= 0.7 && t.noticed === 'no' ? '<li><b style="color:var(--p)">気づかないままPへ誘導された</b></li>'
     : t.pull >= 0.7 ? '<li>Pへ誘導されたが、ずれに気づいた</li>' : t.pull >= 0.3 ? '<li>途中まで引っぱられた</li>' : '<li>ほぼAへ行った（引っぱられていない）</li>';
-  $('rList').innerHTML = `<li>条件：<b>${c.name}</b>${t.blind ? '（伏せていた）' : ''}</li>` +
+  $('rList').innerHTML = `<li>条件：<b>${c.name}</b></li>` +
     `<li>ずらし：<b>${t.ang > 0 ? '+' : ''}${t.ang}°</b> ${side}</li>` +
     `<li>手が止まった向き：Aから <b>${t.devA >= 0 ? '右へ' : '左へ'}${Math.abs(t.devA).toFixed(1)}°</b>、Pからの距離 <b>${t.distP.toFixed(1)} cm</b>、伸ばした距離 ${t.reach.toFixed(0)} cm</li>` +
     `<li>ずれを：<b>${ans}</b>　（${(t.ms / 1000).toFixed(1)}秒）</li>` + verdict;
@@ -417,32 +372,26 @@ function renderHeat() {
 }
 
 // ===== 表示 =====
-const STEP = { idle: 0, listen: 1, reach: 2, answer: 3, result: 4 };
+const STEP = { atStart: 0, listen: 1, reach: 2, answer: 3, result: 4 };
 function render() {
   const i = STEP[state] ?? -1;
   $('steps').querySelectorAll('span:not(.info)').forEach((s, k) => s.className = k === i ? 'now' : '');
-  const spec = settings.mode === 'auto' && plan ? plan.trials[plan.i] : null;
-  $('trialInfo').textContent = trial ? (trial.blind ? '条件は伏せています' : `${CMAP[trial.cond].name} ／ ${trial.ang > 0 ? '+' : ''}${trial.ang}°`)
-    : settings.mode === 'auto' ? (spec ? `次：${plan.i + 1}回目${settings.blind ? '' : `（${CMAP[spec.cond].name} ／ ${spec.ang}°）`}` : '')
-    : `次：${CMAP[settings.manualCond].name} ／ ${settings.manualAng}°`;
+  const nextTxt = `${CMAP[settings.cond].name} ／ ${settings.ang === 0 ? '0°' : `Aを${settings.side > 0 ? '右' : '左'}へ${settings.ang}°`}`;
+  $('trialInfo').textContent = trial ? `今：${CMAP[trial.cond].name} ／ ${trial.ang > 0 ? '+' : ''}${trial.ang}°` : `次：${nextTxt}`;
   const bn = $('banner'), B = $('bBig'), S = $('bSmall');
-  bn.classList.toggle('dark', state === 'listen' || state === 'reach' || state === 'answer');
+  bn.classList.toggle('dark', ['listen', 'reach', 'answer'].includes(state));
   let big = '', small = note;
-  if (!locked() && !['listen', 'reach', 'answer'].includes(state)) {
-    big = 'ここをクリックして始める';
-    small = note || (state === 'reg0' ? '固定したら、スタート印から物までドラッグします' : 'マウスが画面に固定されます（やめるときは Esc）');
-  }
-  else if (state === 'reg0') { big = 'スタート印にマウスを置き、ボタンを押したまま本物Pまでなぞる'; small = note || 'Pに当たったらボタンを離す'; }
+  if (state === 'idle') { big = reg ? 'ここをクリックして開始' : 'ここをクリックして、まず本物Pを記録'; small = note || (reg ? `次：${nextTxt}` : 'マウスが画面に固定されます（止めるときは Esc）'); }
+  else if (state === 'result') { big = '左で次の条件を選び、ここをクリックで次へ'; small = `次：${nextTxt}`; }
+  else if (state === 'reg0') { big = 'スタート印にマウスを置き、押したまま本物Pまでなぞる'; small = note || 'Pに当たったらボタンを離す'; }
   else if (state === 'reg1') { big = '本物Pまでなぞって、ボタンを離す'; small = ''; }
-  else if (state === 'idle' || state === 'result') {
-    big = !reg ? '左の「2 本物Pの位置」を先に記録' : 'スタート印にマウスを戻して クリック';
-    small = note || (reg ? 'Aの音が2秒鳴る → ピッ → 目を閉じたまま手を伸ばす' : '');
-  }
+  else if (state === 'atStart') { big = 'スタート印にマウスを置いて クリック'; small = (note ? note + '　' : '') + `次：${nextTxt}`; }
   else if (state === 'listen') { big = '目を閉じて、Aの音を覚える'; small = 'まだ動かさない'; }
   else if (state === 'reach') { big = '音を頼りに Aへ手を伸ばす'; small = '止めたらクリック'; }
-  else if (state === 'answer') { big = 'Aとのずれを感じた？'; small = '左クリック＝感じた　／　右クリック＝感じなかった　／　ホイール押し（または3）＝わからない'; }
+  else if (state === 'answer') { big = 'Aとのずれを感じた？'; small = '左クリック＝感じた　／　右クリック＝感じなかった　／　3キー＝わからない'; }
+
   B.textContent = big; S.textContent = small; B.hidden = !big; S.hidden = !small;
-  if (state !== 'result' && state !== 'idle') $('resCard').hidden = true;
+  if (busy()) $('resCard').hidden = true;
   draw();
 }
 
@@ -451,7 +400,7 @@ window.addEventListener('resize', resize);
 function draw() {
   const W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
   ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-  const R = reg ? reg.cm : 45, k = cmPerCount();
+  const R = ARM_CM, k = cmPerCount();
   const ext = state === 'reg1' ? Math.max(R, Math.hypot(regRaw.x, regRaw.y) * k) : R;
   const sc = Math.max(0.5, Math.min((H - 110) / (ext * 1.15), (W - 40) / (ext * 2.1)));
   const ox = W / 2, oy = H - 34;
@@ -461,7 +410,7 @@ function draw() {
   ctx.strokeStyle = '#e5e7eb'; ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke();
   const P = reg ? { x: reg.Pc.x * k, y: reg.Pc.y * k } : null;
   if (P && !['listen', 'reach', 'answer', 'reg1'].includes(state)) {
-    const lv = settings.mode === 'auto' ? settings.levels : [Math.abs(settings.manualAng)];
+    const lv = [settings.ang];
     lv.filter(a => a).forEach(a => [-1, 1].forEach(s => { const q = rot(P, a * s), [x, y] = pt({ x: q.x * 1.08, y: q.y * 1.08 });
       ctx.strokeStyle = '#eef2ff'; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(x, y); ctx.stroke(); ctx.fillStyle = '#a5b4fc'; ctx.textAlign = 'center'; ctx.fillText((s > 0 ? '+' : '−') + a + '°', x, y - 4); }));
   }

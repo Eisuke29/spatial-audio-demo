@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>聴覚リダイレクション デモ</title>
+<style>
+:root{
+  --bg:#f3f4f7;--card:#fff;--ink:#16181d;--muted:#6b7280;--line:#e5e7eb;
+  --a:#f97316;--p:#10b981;--e:#3b82f6;--snd:#a855f7;--accent:#4f46e5;
+  font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+[hidden]{display:none!important}
+header{display:flex;align-items:center;gap:16px;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--line)}
+header h1{font-size:17px;margin:0;font-weight:700}
+.status{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.pill{font-size:12px;padding:4px 10px;border-radius:99px;background:#f1f5f9;color:var(--muted);cursor:pointer;border:0;font:inherit;font-size:12px}
+.pill.ok{background:#dcfce7;color:#166534}
+.pill.warn{background:#fef3c7;color:#92400e}
+.app{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px 24px;max-width:1400px;margin:0 auto}
+.card{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 1px 2px #0000000d}
+.side{display:flex;flex-direction:column;gap:14px}
+h2{font-size:13px;color:var(--muted);font-weight:600;margin:0 0 10px}
+.conds{display:grid;gap:8px}
+.cond{display:flex;gap:10px;align-items:flex-start;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;font:inherit}
+.cond b{display:block;font-size:14px}
+.cond span{font-size:12px;color:var(--muted)}
+.cond .ic{font-size:20px;line-height:1.2}
+.cond[aria-pressed=true]{border-color:var(--accent);background:#eef2ff}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0}
+.row label{font-size:14px}
+.row output{font-weight:700;font-variant-numeric:tabular-nums;min-width:4em;text-align:right}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;gap:2px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:6px 4px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px #0002}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.btn{border:0;border-radius:12px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}
+.btn.sub{background:#eef2ff;color:var(--accent)}
+.btn.small{padding:7px 12px;font-size:13px;border-radius:9px}
+.main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.stagecard{padding:0;overflow:hidden;position:relative}
+.steps{display:flex;gap:6px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.steps span{font-size:13px;padding:5px 12px;border-radius:99px;background:#f1f5f9;color:#9ca3af}
+.steps span.now{background:var(--accent);color:#fff;font-weight:700}
+.steps span.done{background:#e0e7ff;color:var(--accent)}
+canvas{display:block;width:100%;height:min(62vh,600px);background:#fff;cursor:pointer}
+.banner{position:absolute;left:0;right:0;top:50px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;text-align:center;padding:20px}
+.banner big{font-size:clamp(22px,3vw,34px);font-weight:800}
+.banner small{font-size:15px;color:var(--muted)}
+.banner:not(.dark){justify-content:flex-end;padding-bottom:150px}
+.banner.dark{background:#0b0d12;color:#e5e7eb}
+.banner.dark small{color:#9ca3af}
+.result{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
+.pull{font-size:44px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.pull small{font-size:16px;font-weight:600;color:var(--muted);margin-left:6px}
+.meter{position:relative;height:14px;border-radius:99px;background:linear-gradient(90deg,var(--a),var(--p));margin:28px 0 6px}
+.meter i{position:absolute;top:-6px;width:4px;height:26px;background:var(--e);border-radius:2px;transform:translateX(-2px)}
+.meter-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.facts{font-size:14px;color:var(--muted)}
+.facts b{color:var(--ink)}
+.ask{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ask p{margin:0;font-weight:700;font-size:16px;flex-basis:100%}
+.sum{display:grid;gap:8px}
+.sumrow{display:grid;grid-template-columns:150px 1fr 60px 90px;gap:10px;align-items:center;font-size:13px}
+.bar{height:10px;background:#f1f5f9;border-radius:99px;position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:99px}
+.muted{color:var(--muted);font-size:13px}
+.hist{font-size:13px;width:100%;border-collapse:collapse;margin-top:12px}
+.hist td,.hist th{padding:5px 6px;border-top:1px solid var(--line);text-align:left}
+.hist th{color:var(--muted);font-weight:600}
+dialog{border:0;border-radius:18px;padding:24px;max-width:520px;box-shadow:0 20px 60px #0003}
+dialog::backdrop{background:#0006}
+dialog h3{margin:0 0 12px}
+dialog ol{padding-left:20px;margin:8px 0 16px}
+dialog li{margin:6px 0}
+.dialog-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media(max-width:900px){.app{grid-template-columns:1fr;padding:16px}.result{grid-template-columns:1fr}.sumrow{grid-template-columns:110px 1fr 50px 70px}header{flex-wrap:wrap;padding:12px 16px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎧 聴覚リダイレクション デモ</h1>
+  <div class="status">
+    <button class="pill" id="pillPhones">ヘッドホン確認</button>
+    <button class="pill" id="pillCal">距離の調整</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="side">
+    <div class="card">
+      <h2>音の条件</h2>
+      <div class="conds" id="conds"></div>
+    </div>
+    <div class="card">
+      <h2>置き方</h2>
+      <div class="row"><label for="dist">本物Pまでの距離</label><output id="distOut"></output></div>
+      <input type="range" id="dist" min="25" max="60" step="1" value="45">
+      <div class="row"><label for="off">AとPのずれ</label><output id="offOut"></output></div>
+      <input type="range" id="off" min="0" max="25" step="1" value="10">
+      <div class="row" style="margin-top:14px"><label>ずらす向き</label></div>
+      <div class="seg" id="dir">
+        <button data-v="lr" aria-pressed="true">ランダム</button><button data-v="l" aria-pressed="false">左</button><button data-v="r" aria-pressed="false">右</button><button data-v="far" aria-pressed="false">奥</button><button data-v="near" aria-pressed="false">手前</button>
+      </div>
+      <div class="row" style="margin-top:14px"><label class="toggle"><input type="checkbox" id="real">Pに本物の物を置く</label></div>
+      <div class="row"><label for="vol">音量</label><output id="volOut"></output></div>
+      <input type="range" id="vol" min="0" max="1" step="0.01" value="0.6">
+    </div>
+    <div class="card muted" id="howto">
+      <b style="color:var(--ink)">やり方</b><br>
+      ① 机のスタート印にマウスを置く<br>
+      ② <b>スペース</b>で開始 → Aを2秒覚える<br>
+      ③ ピッで目を閉じたまま、音を頼りにAへ手を伸ばす<br>
+      ④ 止めたら<b>クリック</b>
+    </div>
+  </aside>
+
+  <section class="main">
+    <div class="card stagecard">
+      <div class="steps" id="steps"><span>スタート位置へ</span><span>Aを覚える</span><span>目を閉じる</span><span>手を伸ばす</span><span>結果</span></div>
+      <canvas id="cv"></canvas>
+      <div class="banner" id="banner"><big id="bannerBig"></big><small id="bannerSmall"></small></div>
+    </div>
+
+    <div class="card" id="askCard" hidden>
+      <div class="ask">
+        <p>止めた位置は、覚えたAの場所とずれていましたか？</p>
+        <button class="btn sub" data-ans="yes">ずれていた</button>
+        <button class="btn sub" data-ans="no">ずれていなかった</button>
+        <button class="btn sub" data-ans="unsure">わからない</button>
+      </div>
+    </div>
+
+    <div class="card" id="resultCard" hidden>
+      <div class="result">
+        <div>
+          <h2 id="resCond"></h2>
+          <div class="pull" id="resPull"></div>
+          <div class="meter"><i id="resMark"></i></div>
+          <div class="meter-lbl"><span>覚えたA</span><span>本物P</span></div>
+        </div>
+        <div class="facts" id="resFacts"></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px"><button class="btn" id="again">次へ（スペース）</button></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin:0 0 6px"><h2 style="margin:0">今までの結果：音にどれだけ引っぱられたか</h2><button class="btn sub small" id="clear">リセット</button></div>
+      <div class="sum" id="sum"></div>
+      <details><summary class="muted" style="cursor:pointer;margin-top:10px">1回ずつ見る</summary><table class="hist" id="hist"></table></details>
+    </div>
+  </section>
+</div>
+
+<dialog id="phonesDlg">
+  <h3>ヘッドホン確認</h3>
+  <p class="muted">有線のヘッドホンがおすすめ。空間オーディオ機能はオフに。</p>
+  <div style="display:flex;gap:8px;margin:12px 0"><button class="btn sub" id="tl">◀ 左から鳴らす</button><button class="btn sub" id="tr">右から鳴らす ▶</button></div>
+  <div class="dialog-actions"><button class="btn" id="phonesOk">左右OK</button></div>
+</dialog>
+
+<dialog id="calDlg">
+  <h3>距離の調整（cm合わせ）</h3>
+  <ol>
+    <li>机にテープで<b>スタート印</b>と、そのまっすぐ<b>40cm奥の印</b>を付ける</li>
+    <li>「調整を始める」を押し、マウスをスタート印に置いて<b>スペース</b></li>
+    <li>40cmの印までまっすぐ動かして<b>スペース</b></li>
+  </ol>
+  <p class="muted" id="calNow"></p>
+  <div class="dialog-actions"><button class="btn sub" id="calClose">閉じる</button><button class="btn" id="calStart">調整を始める</button></div>
+</dialog>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const CONDS = [
+    { id: 'none',  ic: '🔇', name: '音なし',              desc: '記憶だけで手を伸ばす' },
+    { id: 'A',     ic: '📍', name: 'Aから鳴りっぱなし',    desc: '覚えた場所Aから同じ音' },
+    { id: 'warp',  ic: '🌀', name: 'ワーピング',          desc: '手が進むほど音源がAからPへ移る' },
+    { id: 'Psens', ic: '📡', name: 'Pからバックセンサー',  desc: 'Pから鳴り、Pに近いほど速く大きく' },
+    { id: 'random',ic: '🎲', name: 'おまかせ（条件を隠す）', desc: '上の4つとずれをランダムに。結果で答え合わせ' },
+  ];
+  const NAME = Object.fromEntries(CONDS.map(c => [c.id, c.name]));
+  let cond = 'warp', dir = 'lr';
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+  let pxPerCm = store.get('rd.pxPerCm', null);
+  let phonesOk = store.get('rd.phones', false);
+  let history = store.get('rd.history', []);
+
+  // ---------- 条件カード ----------
+  const condsEl = $('conds');
+  CONDS.forEach(c => {
+    const b = document.createElement('button'); b.className = 'cond'; b.dataset.id = c.id;
+    b.innerHTML = `<span class="ic">${c.ic}</span><div><b>${c.name}</b><span>${c.desc}</span></div>`;
+    b.onclick = () => { if (busy()) return; cond = c.id; syncConds(); };
+    condsEl.appendChild(b);
+  });
+  function syncConds() { condsEl.querySelectorAll('.cond').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === cond))); }
+  syncConds();
+  $('dir').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; dir = b.dataset.v; $('dir').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); draw(); });
+  function syncOut() {
+    $('distOut').textContent = $('dist').value + ' cm';
+    $('offOut').textContent = $('off').value + ' cm';
+    $('volOut').textContent = Math.round($('vol').value * 100) + '%';
+    if (master) master.gain.value = Number($('vol').value);
+    draw();
+  }
+  ['dist', 'off', 'vol'].forEach(id => $(id).addEventListener('input', syncOut));
+
+  // ---------- 音 ----------
+  let ac = null, master = null, panner = null, burst = null;
+  function ensureAudio() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = Number($('vol').value); master.connect(ac.destination);
+    panner = ac.createPanner();
+    panner.panningModel = 'HRTF'; panner.distanceModel = 'inverse'; panner.refDistance = 0.3; panner.rolloffFactor = 1;
+    panner.connect(master);
+    const l = ac.listener;
+    if (l.forwardX) { l.forwardX.value = 0; l.forwardY.value = 0; l.forwardZ.value = -1; l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0; }
+    else l.setOrientation(0, 0, -1, 0, 1, 0);
+    const sr = ac.sampleRate, n = Math.floor(sr * 0.15), f = Math.floor(sr * 0.005);
+    burst = ac.createBuffer(1, n, sr); const d = burst.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.min(1, i / f, (n - 1 - i) / f) * 0.5;
+  }
+  // 机の座標(cm, x右・y奥, 原点=スタート) → 頭を原点とする音の座標(m)
+  const HEAD_BEHIND = 20, DESK_BELOW = 30;
+  function setSource(p) {
+    const x = p.x / 100, y = -DESK_BELOW / 100, z = -(p.y + HEAD_BEHIND) / 100, t = ac.currentTime;
+    if (panner.positionX) { panner.positionX.setTargetAtTime(x, t, 0.01); panner.positionY.setTargetAtTime(y, t, 0.01); panner.positionZ.setTargetAtTime(z, t, 0.01); }
+    else panner.setPosition(x, y, z);
+  }
+  function pulse(t, gain, dest) {
+    const s = ac.createBufferSource(); s.buffer = burst;
+    const g = ac.createGain(); g.gain.value = gain; s.connect(g); g.connect(dest); s.start(t);
+  }
+  function beep() {
+    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+    o.frequency.value = 1000; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.12);
+  }
+  function testSide(side) {
+    ensureAudio();
+    const p = ac.createStereoPanner(); p.pan.value = side; p.connect(master);
+    for (let i = 0; i < 3; i++) pulse(ac.currentTime + i * 0.25, 0.8, p);
+  }
+  let schedTimer = null, nextT = 0;
+  function startLoop() {
+    nextT = ac.currentTime + 0.02;
+    const tick = () => {
+      if (!trial || trial.cond === 'none') return;
+      const { interval, gain } = soundState();
+      while (nextT < ac.currentTime + 0.08) { pulse(nextT, gain, panner); nextT += interval; }
+      schedTimer = setTimeout(tick, 20);
+    };
+    tick();
+  }
+  function stopLoop() { clearTimeout(schedTimer); schedTimer = null; }
+
+  // 音源の場所と鳴り方
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  function sourcePos() {
+    const { A, P, cond } = trial;
+    if (cond === 'A') return A;
+    if (cond === 'Psens') return P;
+    if (cond === 'warp') {
+      const M = { x: (A.x + P.x) / 2, y: (A.y + P.y) / 2 };
+      const q = clamp((hand.x * M.x + hand.y * M.y) / (M.x * M.x + M.y * M.y), 0, 1);
+      const s = q * q * (3 - 2 * q);
+      return { x: A.x + (P.x - A.x) * s, y: A.y + (P.y - A.y) * s };
+    }
+    return null;
+  }
+  function soundState() {
+    if (trial.cond === 'Psens') {
+      const d = Math.hypot(hand.x - trial.P.x, hand.y - trial.P.y);
+      const k = clamp(1 - d / 40, 0, 1);
+      return { interval: 0.6 - 0.48 * k, gain: 0.35 + 0.65 * k };
+    }
+    return { interval: 0.4, gain: 0.8 };
+  }
+
+  // ---------- 入力（Pointer Lock） ----------
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  let hand = { x: 0, y: 0 }, live = { x: 0, y: 0 };
+  let state = 'idle'; // idle | cal0 | cal1 | preview | dark | reach | ask | result
+  let trial = null, timers = [];
+  const busy = () => ['preview', 'dark', 'reach', 'ask', 'cal0', 'cal1'].includes(state);
+  const locked = () => document.pointerLockElement === cv;
+  function lock() {
+    ensureAudio();
+    try {
+      const r = cv.requestPointerLock({ unadjustedMovement: true });
+      if (r && r.catch) r.catch(() => cv.requestPointerLock());
+    } catch { cv.requestPointerLock(); }
+  }
+  cv.addEventListener('click', () => { if (!locked()) lock(); });
+  document.addEventListener('pointerlockchange', () => {
+    if (!locked() && ['preview', 'dark', 'reach'].includes(state)) cancel('マウスの固定が外れたので中止しました');
+    if (!locked() && ['cal0', 'cal1'].includes(state)) { state = 'idle'; }
+    live = { x: 0, y: 0 }; render();
+  });
+  let calRaw = { x: 0, y: 0 };
+  document.addEventListener('mousemove', e => {
+    if (!locked()) return;
+    if (state === 'cal1') { calRaw.x += e.movementX; calRaw.y -= e.movementY; render(); return; }
+    const k = pxPerCm || 30;
+    const dx = e.movementX / k, dy = -e.movementY / k;
+    if (state === 'reach') {
+      hand.x += dx; hand.y += dy;
+      trial.path.push({ x: hand.x, y: hand.y });
+      const s = trial.cond !== 'none' ? sourcePos() : null;
+      if (s) { setSource(s); trial.srcPath.push(s); }
+    } else { live.x += dx; live.y += dy; draw(); }
+  });
+  document.addEventListener('mousedown', e => {
+    if (!locked() || e.button !== 0) return;
+    if (state === 'reach') finishReach();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.code !== 'Space') return;
+    if (document.querySelector('dialog[open]')) return;
+    e.preventDefault();
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    if (state === 'cal0') { state = 'cal1'; calRaw = { x: 0, y: 0 }; render(); return; }
+    if (state === 'cal1') {
+      const d = Math.hypot(calRaw.x, calRaw.y);
+      if (d > 20) { pxPerCm = d / 40; store.set('rd.pxPerCm', pxPerCm); }
+      state = 'idle'; live = { x: 0, y: 0 }; render(); return;
+    }
+    if (state === 'reach') { finishReach(); return; }
+    if (state === 'idle' || state === 'result') { if (!locked()) { lock(); return; } startTrial(); }
+  });
+
+  // ---------- 1回の流れ ----------
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function layoutAP() {
+    const D = Number($('dist').value), off = Number($('off').value);
+    const P = { x: 0, y: D };
+    let d = dir;
+    if (d === 'lr') d = Math.random() < 0.5 ? 'l' : 'r';
+    const v = { l: [-1, 0], r: [1, 0], far: [0, 1], near: [0, -1] }[d];
+    return { P, A: { x: P.x + v[0] * off, y: P.y + v[1] * off }, off };
+  }
+  function startTrial() {
+    ensureAudio(); clearTimers();
+    let c = cond, hidden = false, { A, P, off } = layoutAP();
+    if (c === 'random') {
+      hidden = true;
+      c = ['none', 'A', 'warp', 'Psens'][Math.floor(Math.random() * 4)];
+      const offs = [0, off, off, off];
+      const o = offs[Math.floor(Math.random() * offs.length)];
+      const ux = off ? (A.x - P.x) / off : 0, uy = off ? (A.y - P.y) / off : 0;
+      A = { x: P.x + ux * o, y: P.y + uy * o }; off = o;
+    }
+    trial = { cond: c, hidden, A, P, off, path: [{ x: 0, y: 0 }], srcPath: [], real: $('real').checked, t0: 0 };
+    $('askCard').hidden = true; $('resultCard').hidden = true;
+    state = 'preview'; render();
+    later(() => { state = 'dark'; render(); }, 2000);
+    later(() => {
+      hand = { x: 0, y: 0 }; trial.path = [{ x: 0, y: 0 }];
+      state = 'reach'; trial.t0 = performance.now(); beep();
+      if (trial.cond !== 'none') { const s = sourcePos(); setSource(s); trial.srcPath.push(s); later(startLoop, 150); }
+      render();
+    }, 3200);
+  }
+  function finishReach() {
+    stopLoop(); clearTimers();
+    trial.E = { ...hand }; trial.ms = performance.now() - trial.t0;
+    state = 'ask'; render();
+    if (document.pointerLockElement) document.exitPointerLock();
+    $('askCard').hidden = false;
+  }
+  function cancel(msg) { stopLoop(); clearTimers(); trial = null; state = 'idle'; $('askCard').hidden = true; flash = msg; render(); }
+  let flash = '';
+  document.querySelectorAll('[data-ans]').forEach(b => b.onclick = () => {
+    if (state !== 'ask') return;
+    trial.noticed = b.dataset.ans;
+    const { A, P, E } = trial, dx = P.x - A.x, dy = P.y - A.y, L2 = dx * dx + dy * dy;
+    trial.pull = L2 > 0 ? ((E.x - A.x) * dx + (E.y - A.y) * dy) / L2 : null;
+    trial.errA = Math.hypot(E.x - A.x, E.y - A.y); trial.errP = Math.hypot(E.x - P.x, E.y - P.y);
+    history.push({ cond: trial.cond, off: trial.off, pull: trial.pull, errA: trial.errA, errP: trial.errP, noticed: trial.noticed, real: trial.real, hidden: trial.hidden, ms: Math.round(trial.ms), t: Date.now() });
+    store.set('rd.history', history);
+    $('askCard').hidden = true; state = 'result'; showResult(); render(); renderSummary();
+  });
+  $('again').onclick = () => { $('resultCard').hidden = true; trial = null; state = 'idle'; render(); lock(); };
+
+  function showResult() {
+    const t = trial, ans = { yes: 'ずれていた', no: 'ずれていなかった', unsure: 'わからない' }[t.noticed];
+    $('resCond').textContent = (t.hidden ? '🎲 答え：' : '') + NAME[t.cond] + `（ずれ ${t.off.toFixed(0)} cm）`;
+    if (t.pull === null) {
+      $('resPull').innerHTML = `${t.errA.toFixed(1)}<small>cm Aからずれた</small>`;
+      $('resMark').parentElement.hidden = true; $('resMark').parentElement.nextElementSibling.hidden = true;
+    } else {
+      $('resPull').innerHTML = `${Math.round(t.pull * 100)}%<small>Pへ引っぱられた</small>`;
+      $('resMark').parentElement.hidden = false; $('resMark').parentElement.nextElementSibling.hidden = false;
+      $('resMark').style.left = clamp(t.pull * 100, 0, 100) + '%';
+    }
+    $('resFacts').innerHTML =
+      `止めた位置は 覚えたAから <b>${t.errA.toFixed(1)} cm</b>、本物Pから <b>${t.errP.toFixed(1)} cm</b><br>` +
+      `あなたの答え：<b>${ans}</b><br>` +
+      (t.pull === null ? 'ずれ0cmの回（比較用）' : t.pull >= 0.7 && t.noticed === 'no' ? '→ <b style="color:var(--p)">気づかずにPへ誘導された</b>' :
+        t.pull >= 0.7 ? '→ Pへ誘導されたが、気づかれた' : t.pull >= 0.3 ? '→ 途中まで引っぱられた' : '→ ほぼ記憶どおり（引っぱられていない）') +
+      `<br><span style="font-size:12px">到達まで ${(t.ms / 1000).toFixed(1)} 秒</span>`;
+    $('resultCard').hidden = false;
+  }
+
+  function renderSummary() {
+    const el = $('sum'); el.innerHTML = '';
+    const rows = ['none', 'A', 'warp', 'Psens'].map(c => {
+      const h = history.filter(r => r.cond === c && r.pull !== null);
+      const n = h.length, mean = n ? h.reduce((s, r) => s + r.pull, 0) / n : null;
+      const ans = h.filter(r => r.noticed !== 'unsure'), yes = ans.filter(r => r.noticed === 'yes').length;
+      return { c, n, mean, notice: ans.length ? yes / ans.length : null };
+    });
+    if (!history.length) { el.innerHTML = '<p class="muted" style="margin:0">まだありません。1回やるとここに条件ごとの平均が出ます。</p>'; }
+    else {
+      el.insertAdjacentHTML('beforeend', '<div class="sumrow muted"><span>条件</span><span>Pへの引っぱり（平均）</span><span>回数</span><span>気づいた率</span></div>');
+      rows.forEach(r => el.insertAdjacentHTML('beforeend',
+        `<div class="sumrow"><b>${NAME[r.c]}</b><div class="bar"><i style="width:${r.mean === null ? 0 : clamp(r.mean * 100, 0, 100)}%"></i></div>` +
+        `<span>${r.mean === null ? '—' : Math.round(r.mean * 100) + '%'} <span class="muted">${r.n}回</span></span><span>${r.notice === null ? '—' : Math.round(r.notice * 100) + '%'}</span></div>`));
+    }
+    const ans = { yes: 'ずれていた', no: 'なし', unsure: '?' };
+    $('hist').innerHTML = '<tr><th>#</th><th>条件</th><th>ずれ</th><th>引っぱり</th><th>Aから</th><th>答え</th></tr>' +
+      history.map((r, i) => `<tr><td>${i + 1}</td><td>${r.hidden ? '🎲 ' : ''}${NAME[r.cond]}</td><td>${r.off} cm</td><td>${r.pull === null ? '—' : Math.round(r.pull * 100) + '%'}</td><td>${r.errA.toFixed(1)} cm</td><td>${ans[r.noticed]}</td></tr>`).reverse().join('');
+  }
+  $('clear').onclick = () => { if (confirm('今までの結果を消しますか？')) { history = []; store.set('rd.history', history); renderSummary(); } };
+
+  // ---------- 表示 ----------
+  const STEP = { idle: 0, preview: 1, dark: 2, reach: 3, ask: 4, result: 4 };
+  function render() {
+    const i = STEP[state] ?? -1;
+    $('steps').querySelectorAll('span').forEach((s, k) => { s.className = k === i ? 'now' : k < i ? 'done' : ''; });
+    const big = $('bannerBig'), small = $('bannerSmall'), bn = $('banner');
+    bn.classList.toggle('dark', state === 'dark' || state === 'reach');
+    bn.hidden = false;
+    if (state === 'cal0') { big.textContent = 'マウスをスタート印に置いて スペース'; small.textContent = '距離の調整 1/2'; }
+    else if (state === 'cal1') {
+      const d = Math.hypot(calRaw.x, calRaw.y);
+      big.textContent = '40cmの印まで まっすぐ動かして スペース'; small.textContent = `距離の調整 2/2 ・ 動いた量 ${Math.round(d)}`;
+    }
+    else if (!locked() && (state === 'idle' || state === 'result')) {
+      if (state === 'result') bn.hidden = true;
+      else { big.textContent = 'ここをクリックして開始'; small.textContent = flash || 'マウスが画面内に固定されます（Escで解除）'; }
+    }
+    else if (state === 'idle') { big.textContent = 'スタート印にマウスを置いて スペース'; small.textContent = flash || '青い点が今のマウス位置（調整の確認用）'; bn.style.background = 'transparent'; }
+    else if (state === 'preview') { big.textContent = 'Aの場所を覚えて'; small.textContent = '2秒後に暗くなります'; }
+    else if (state === 'dark') { big.textContent = '目を閉じて'; small.textContent = 'ピッと鳴ったら手を伸ばす'; }
+    else if (state === 'reach') { big.textContent = '音を頼りに Aへ手を伸ばす'; small.textContent = trial.real ? '物に当たったらクリック' : '止めたらクリック'; }
+    else if (state === 'ask' || state === 'result') bn.hidden = true;
+    if (!bn.classList.contains('dark')) bn.style.background = 'transparent'; else bn.style.background = '';
+    if (state !== 'idle') flash = '';
+    updatePills(); draw();
+  }
+  function updatePills() {
+    const p = $('pillPhones'), c = $('pillCal');
+    p.textContent = phonesOk ? '✓ ヘッドホン' : 'ヘッドホン確認'; p.className = 'pill ' + (phonesOk ? 'ok' : 'warn');
+    c.textContent = pxPerCm ? '✓ cm調整済み' : '⚠ cm未調整'; c.className = 'pill ' + (pxPerCm ? 'ok' : 'warn');
+  }
+
+  let view = null;
+  function resize() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+  function draw() {
+    const W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
+    const top = 50, minY = -8, maxY = 72;
+    const sc = Math.min((H - top - 20) / (maxY - minY), W / 90);
+    const ox = W / 2, oy = H - 20 + minY * sc;
+    const pt = p => [ox + p.x * sc, oy - p.y * sc];
+    ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+    // 10cm目盛り
+    ctx.font = '11px system-ui'; ctx.fillStyle = '#9ca3af'; ctx.textAlign = 'left';
+    for (let y = 0; y <= 70; y += 10) {
+      const [, py] = pt({ x: 0, y }); ctx.strokeStyle = y ? '#f1f5f9' : '#d1d5db'; ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+      if (y) ctx.fillText(y + ' cm', 8, py - 3);
+    }
+    for (let x = -40; x <= 40; x += 10) { const [px] = pt({ x, y: 0 }); ctx.strokeStyle = '#f8fafc'; ctx.beginPath(); ctx.moveTo(px, top); ctx.lineTo(px, H); ctx.stroke(); }
+    const dot = (p, color, r, label, ring) => {
+      const [x, y] = pt(p); ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
+      if (ring) { ctx.lineWidth = 3; ctx.strokeStyle = color; ctx.stroke(); } else { ctx.fillStyle = color; ctx.fill(); }
+      if (label) { ctx.fillStyle = color; ctx.font = '700 13px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - r - 8); }
+    };
+    dot({ x: 0, y: 0 }, '#111827', 7, 'スタート');
+    if (state === 'idle' && locked()) dot(live, '#3b82f6', 6);
+    if (state === 'cal1') { const k = Math.hypot(calRaw.x, calRaw.y) / 40 || 1; dot({ x: 0, y: 40 }, '#9ca3af', 8, '40cm', true); }
+    if (!trial) {
+      if (state === 'idle') { const D = Number($('dist').value), off = Number($('off').value); const sx = { l: -1, r: 1 }[dir] || 0, sy = { far: 1, near: -1 }[dir] || 0;
+        ctx.globalAlpha = 0.35; dot({ x: 0, y: D }, '#10b981', 9, '本物P');
+        if (dir === 'lr') { dot({ x: -off, y: D }, '#f97316', 9, 'A?', true); dot({ x: off, y: D }, '#f97316', 9, 'A?', true); }
+        else dot({ x: sx * off, y: D + sy * off }, '#f97316', 9, 'A', true);
+        ctx.globalAlpha = 1; }
+      return;
+    }
+    if (state === 'preview') dot(trial.A, '#f97316', 14, 'A', true);
+    if (state === 'result') {
+      // 音源の通り道
+      if (trial.srcPath.length > 1) { ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.strokeStyle = '#a855f7'; ctx.beginPath(); trial.srcPath.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.lineWidth = 2.5; ctx.strokeStyle = '#93c5fd'; ctx.beginPath(); trial.path.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+      dot(trial.A, '#f97316', 12, '覚えたA', true);
+      const [px, py] = pt(trial.P); ctx.fillStyle = '#10b981'; ctx.fillRect(px - 9, py - 9, 18, 18); ctx.font = '700 13px system-ui'; ctx.textAlign = 'center'; ctx.fillText('本物P', px, py + 26);
+      dot(trial.E, '#3b82f6', 7, '止めた位置');
+      ctx.font = '12px system-ui'; ctx.textAlign = 'left'; ctx.fillStyle = '#6b7280';
+      ctx.fillText('— 手の軌跡', W - 170, top + 16); ctx.fillStyle = '#a855f7'; ctx.fillText('- - 音源の動き', W - 170, top + 34);
+    }
+  }
+  window.addEventListener('resize', resize);
+
+  // ---------- ダイアログ ----------
+  $('pillPhones').onclick = () => $('phonesDlg').showModal();
+  $('tl').onclick = () => testSide(-1); $('tr').onclick = () => testSide(1);
+  $('phonesOk').onclick = () => { phonesOk = true; store.set('rd.phones', true); $('phonesDlg').close(); updatePills(); };
+  $('pillCal').onclick = () => { if (busy()) return; $('calNow').textContent = pxPerCm ? `今の値：1cm = ${pxPerCm.toFixed(1)}` : 'まだ調整していません（仮の値で動きます）'; $('calDlg').showModal(); };
+  $('calClose').onclick = () => $('calDlg').close();
+  $('calStart').onclick = () => { $('calDlg').close(); state = 'cal0'; lock(); render(); };
+
+  syncOut(); renderSummary(); resize(); render();
+  if (!phonesOk) $('phonesDlg').showModal();
+})();
+</script>
+</body>
+</html>

@@ -37,10 +37,10 @@
     if (!storageUsable) return;
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(database));
-      $('saveStatus').textContent = 'このブラウザに保存済み';
+      $('saveStatus').textContent = '保存済み';
       storageWarning('');
     } catch (_) {
-      $('saveStatus').textContent = 'ブラウザ保存に失敗';
+      $('saveStatus').textContent = '保存失敗';
       storageWarning('ブラウザ保存に失敗しました。記録はこのページ内に残っています。「ここまで保存して終了」のあと、CSVかJSONを保存してください。');
     }
   }
@@ -80,20 +80,20 @@
   function syncSetup() {
     const input = $('inputMode').value;
     $('inputHint').textContent = input === 'lock'
-      ? '机の上を広く使えます。入力を準備したあと、マウスをSに戻して押し続けます。Escで解除。'
-      : input === 'touch' ? '画面を机に平らに置き、Sに触れ続け、合図のあと指を滑らせます。画面の大きさが移動範囲です。'
-        : 'Sを押したまま画面内で移動します。画面端を越えると記録を中止します。';
+      ? 'Escで解除'
+      : input === 'touch' ? '範囲 = 画面'
+        : '画面外で中断';
     $('contactHelp').hidden = $('taskMode').value !== 'contact';
     $('referenceControls').hidden = input !== 'lock'; $('scaleField').hidden = input !== 'lock';
     $('clearP').hidden = !reference;
     $('referenceStatus').textContent = reference
-      ? `登録済み：S→Pを100%として使用（移動量 ${reference.pixelsPerUnit.toFixed(1)}）。毎回Sへ戻してください。`
-      : '未登録。実物なしでは初期の基準距離を使えます。';
+      ? `登録済み（${reference.pixelsPerUnit.toFixed(1)} px / |SP|）`
+      : '未登録（既定値）';
     try {
       const offsets = C.parseOffsets($('offsets').value);
       const n = (offsets.length * 2 - 1) * 4 * Number($('repeats').value);
-      $('trialCount').textContent = Number.isFinite(n) ? `本番 ${n}試行` : '試行数を確認してください';
-    } catch (_) { $('trialCount').textContent = 'ずらし量を確認してください'; }
+      $('trialCount').textContent = Number.isFinite(n) ? `N = 4 条件 × ${offsets.length * 2 - 1} 水準 × ${$('repeats').value} ブロック = ${n} 試行` : 'N = —';
+    } catch (_) { $('trialCount').textContent = 'ずらし量が不正'; }
     $('volumeValue').textContent = `${Math.round(Number($('volume').value) * 100)}%`;
   }
   function newSeed() {
@@ -116,13 +116,13 @@
   }
   function readyTrial() {
     clearTimers(); current = null; phase = 'ready'; hand = { x: 0, z: 0 };
-    $('sessionLabel').textContent = session.phase === 'practice' ? 'PRACTICE · 練習' : 'MAIN · 本番';
+    $('sessionLabel').textContent = session.phase === 'practice' ? '練習' : '本番';
     $('progressText').textContent = `${session.nextIndex + 1} / ${session.plan.length}`;
     $('progressBar').max = session.plan.length; $('progressBar').value = session.nextIndex;
-    $('runTitle').textContent = '開始位置へ戻してください';
+    $('runTitle').textContent = '待機';
     $('runInstruction').textContent = session.config.input === 'lock'
-      ? '図の中をクリックして入力を準備します。次にマウスを机のSへ戻し、左ボタンを押し続けてください。'
-      : '図のSを押し続けます。Aを覚え、暗くなったら目を閉じて、合図のあとに動かしてください。';
+      ? 'クリックで入力を取得 → Sへ戻し、左ボタンを保持'
+      : 'Sを押し続けて開始';
     $('responses').hidden = true; $('feedback').hidden = true; $('next').hidden = true;
     $('trialOverlay').hidden = true; $('cancelCalibration').hidden = true; $('finish').hidden = false;
     message(''); draw(); canvas.focus({ preventScroll: true });
@@ -162,10 +162,10 @@
       await audio.ready(config.volume);
       if (document.pointerLockElement !== canvas || phase !== 'acquiring') throw new Error('入力の準備が解除されました。');
       phase = calibration ? 'calibration-origin' : 'origin';
-      $('runTitle').textContent = 'マウスを机のSへ戻してください';
+      $('runTitle').textContent = 'Sへ戻す';
       $('runInstruction').textContent = calibration
-        ? 'Sへ戻したら左ボタンを押し続けてPまで動かし、実物に当たったところで離してください。PはSの前方に置きます。'
-        : '開始位置に戻したら、左ボタンを押し続けます。Aが2秒出たあと、暗くなったら目を閉じてください。';
+        ? '左ボタンを保持したままPへ移動し、接触で離す'
+        : '左ボタンを保持して開始';
       draw();
     } catch (e) {
       phase = calibration ? 'calibration-ready' : 'ready'; unlock();
@@ -190,8 +190,8 @@
       pixelsPerUnit: mapping, canvasWidth: layout.width, canvasHeight: layout.height,
       startPosition: { ...hand }, startDrift: 0, path: [], noticed: null, contact: null };
     session.pending = current; session.audio = audio.info(); phase = 'preview';
-    $('runTitle').textContent = 'Aの場所を覚えてください';
-    $('runInstruction').textContent = '2秒間、手を止めて場所を覚えます。まだ動かさないでください。';
+    $('runTitle').textContent = 'Aの場所を記憶（2 s）';
+    $('runInstruction').textContent = '静止';
     $('trialOverlay').hidden = true; audio.stop(); persist(); draw();
     checkpoint = setInterval(() => {
       const last = current?.path.at(-1);
@@ -200,9 +200,9 @@
     }, 1000);
     delay(() => {
       if (phase !== 'preview') return;
-      phase = 'dark'; $('trialOverlay').textContent = '目を閉じてください'; $('trialOverlay').hidden = false;
-      $('runTitle').textContent = '目を閉じて合図を待ちます';
-      $('runInstruction').textContent = 'ボタンを持ち続けてください。「ピッ」のあとに手を動かします。';
+      phase = 'dark'; $('trialOverlay').textContent = '閉眼'; $('trialOverlay').hidden = false;
+      $('runTitle').textContent = '閉眼・合図待ち';
+      $('runInstruction').textContent = '保持';
       delay(() => {
         if (phase !== 'dark') return;
         phase = 'cue'; audio.cue();
@@ -213,10 +213,10 @@
   function startReach() {
     if (phase !== 'cue' || !current) return;
     phase = 'reach'; reachStarted = performance.now(); lastSample = -Infinity;
-    $('trialOverlay').textContent = '音を聞いて、手を伸ばす';
-    $('runTitle').textContent = 'ここだと思った位置で離してください';
+    $('trialOverlay').textContent = '到達';
+    $('runTitle').textContent = '到達';
     $('runInstruction').textContent = session.config.task === 'contact'
-      ? '目を閉じたまま、実物に当たったらボタンを離します。' : '目を閉じたまま、届いたと思ったらボタンを離します。';
+      ? '接触で離す' : '到達位置で離す';
     try { current.audioStart = audio.start(current, hand, session.config.sound); }
     catch (e) { abort('audio_error', `音声の再生に失敗しました：${e.message}`); return; }
     sample(true);
@@ -249,9 +249,9 @@
     sample(true); current.endpoint = { ...hand }; current.durationMs = performance.now() - reachStarted;
     current.metrics = C.metrics(current, current.endpoint, current.path);
     current.status = 'awaiting_response'; phase = 'response'; clearTimers(); audio.stop(); unlock(); releaseCapture();
-    $('trialOverlay').textContent = '目を開けて回答してください';
-    $('runTitle').textContent = '今の感覚を答えてください';
-    $('runInstruction').textContent = '位置と音の設定は、回答後まで表示しません。';
+    $('trialOverlay').textContent = '開眼・回答';
+    $('runTitle').textContent = '回答';
+    $('runInstruction').textContent = '';
     $('responses').hidden = false; $('contactQuestion').hidden = session.config.task !== 'contact';
     document.querySelectorAll('[data-noticed], [data-contact]').forEach(b => b.setAttribute('aria-pressed', 'false'));
     $('saveAnswer').disabled = true; persist();
@@ -288,14 +288,14 @@
     phase = 'feedback'; persist();
     const practice = session.phase === 'practice';
     if (!practice && session.nextIndex === session.plan.length) { finishSession(true); return; }
-    $('runTitle').textContent = '保存しました';
-    $('runInstruction').textContent = practice ? '練習だけ答え合わせを表示します。オレンジ=A、緑=P、紺=到達位置です。' : '正解と条件は、本番が終わってから確認できます。';
+    $('runTitle').textContent = '記録済み';
+    $('runInstruction').textContent = practice ? '○ A　■ P　● E（到達点）' : '';
     $('trialOverlay').hidden = practice;
-    if (!practice) $('trialOverlay').textContent = '保存しました';
+    if (!practice) $('trialOverlay').textContent = '記録済み';
     $('feedback').hidden = false;
     $('feedback').textContent = practice
-      ? `${C.CONDITIONS[current.condition]} ／ ずらし ${current.offsetPct}%\nAとの誤差 ${(current.metrics.errorA * 100).toFixed(1)}% ／ Pとの誤差 ${(current.metrics.errorP * 100).toFixed(1)}%` : `${session.nextIndex} / ${session.plan.length} 試行を保存しました。マウスをSに戻して進めてください。`;
-    $('next').textContent = session.nextIndex === session.plan.length ? '練習の結果を見る →' : '開始位置へ戻して次へ →';
+      ? `${C.CONDITIONS[current.condition]}　ずらし ${current.offsetPct}%\n|E−A| ${(current.metrics.errorA * 100).toFixed(1)}%　|E−P| ${(current.metrics.errorP * 100).toFixed(1)}%` : `${session.nextIndex} / ${session.plan.length}`;
+    $('next').textContent = session.nextIndex === session.plan.length ? '結果' : '次へ';
     $('next').hidden = false; draw();
   }
   function finishSession(complete = false) {
@@ -319,10 +319,10 @@
       calibrationConfig.reference = null;
       if (calibrationConfig.input !== 'lock') throw new Error('Pの登録には、画面端を越えるマウス入力を使います。');
       session = null; current = null; phase = 'calibration-ready'; hand = { x: 0, z: 0 };
-      showRun(); $('sessionLabel').textContent = 'REFERENCE · P登録';
+      showRun(); $('sessionLabel').textContent = 'P登録';
       $('progressText').textContent = ''; $('progressBar').value = 0;
-      $('runTitle').textContent = '机上の開始位置SとPを決めます';
-      $('runInstruction').textContent = 'PをSの前方に置き、図の中をクリックして入力を準備します。次にマウスをSへ戻してください。';
+      $('runTitle').textContent = '基準Pの登録';
+      $('runInstruction').textContent = 'クリックで入力を取得 → Sへ戻す';
       $('responses').hidden = true; $('feedback').hidden = true; $('next').hidden = true;
       $('trialOverlay').hidden = true; $('finish').hidden = true; $('cancelCalibration').hidden = false;
       message(''); draw();
@@ -360,33 +360,39 @@
     if ($('run').hidden) return;
     layout = getLayout(); const g = context, l = layout;
     const point = p => ({ x: l.ox + p.x * l.scale, y: l.oy - p.z * l.scale });
-    g.clearRect(0, 0, l.width, l.height); g.fillStyle = '#f7f9f6'; g.fillRect(0, 0, l.width, l.height);
-    g.strokeStyle = '#e4ebe5'; g.lineWidth = 1;
+    const mono = 'ui-monospace, Consolas, monospace';
+    g.clearRect(0, 0, l.width, l.height); g.fillStyle = '#fff'; g.fillRect(0, 0, l.width, l.height);
+    g.strokeStyle = '#ececec'; g.lineWidth = 1;
     for (let x = -2; x <= 2; x += 0.25) { const p = point({ x, z: 0 }); g.beginPath(); g.moveTo(p.x, 0); g.lineTo(p.x, l.height); g.stroke(); }
     for (let z = 0; z <= 2; z += 0.25) { const p = point({ x: 0, z }); g.beginPath(); g.moveTo(0, p.y); g.lineTo(l.width, p.y); g.stroke(); }
-    function mark(p, label, color, square = false) {
-      const t = point(p); g.fillStyle = color;
-      if (square) g.fillRect(t.x - 8, t.y - 8, 16, 16);
-      else { g.beginPath(); g.arc(t.x, t.y, label === 'S' ? 18 : 9, 0, Math.PI * 2); g.fill(); }
-      g.font = '600 13px system-ui'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.fillStyle = label === 'S' ? '#fff' : color;
-      g.fillText(label, t.x, label === 'S' ? t.y : t.y - 22);
+    const o = point({ x: 0, z: 0 });
+    g.strokeStyle = '#9a9a9a'; g.beginPath(); g.moveTo(0, o.y); g.lineTo(l.width, o.y); g.moveTo(o.x, 0); g.lineTo(o.x, l.height); g.stroke();
+    g.fillStyle = '#777'; g.font = `11px ${mono}`; g.textBaseline = 'alphabetic';
+    g.textAlign = 'right'; g.fillText('x', l.width - 8, o.y - 6);
+    g.textAlign = 'left'; g.fillText('z', o.x + 6, 14);
+    function mark(p, label, kind) {
+      const t = point(p); g.strokeStyle = '#111'; g.fillStyle = '#111'; g.lineWidth = 1.5;
+      if (kind === 'square') g.fillRect(t.x - 6, t.y - 6, 12, 12);
+      else if (kind === 'open') { g.beginPath(); g.arc(t.x, t.y, 7, 0, Math.PI * 2); g.stroke(); }
+      else if (kind === 'origin') { g.beginPath(); g.arc(t.x, t.y, 14, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(t.x - 5, t.y); g.lineTo(t.x + 5, t.y); g.moveTo(t.x, t.y - 5); g.lineTo(t.x, t.y + 5); g.stroke(); }
+      else { g.beginPath(); g.arc(t.x, t.y, 5, 0, Math.PI * 2); g.fill(); }
+      g.font = `12px ${mono}`; g.textAlign = 'left'; g.textBaseline = 'middle';
+      g.fillText(label, t.x + (kind === 'origin' ? 20 : 12), t.y - 10);
     }
-    mark({ x: 0, z: 0 }, 'S', '#233e43');
-    if (phase === 'preview' && current) mark(current.A, 'A', '#bf5c2e');
+    mark({ x: 0, z: 0 }, 'S', 'origin');
+    if (phase === 'preview' && current) mark(current.A, 'A', 'open');
     if (phase === 'feedback' && session?.phase === 'practice' && current) {
-      g.strokeStyle = '#8a9d9e'; g.lineWidth = 2; g.beginPath();
-      current.path.forEach((p, i) => { const t = point(p); if (i) g.lineTo(t.x, t.y); else g.moveTo(t.x, t.y); }); g.stroke();
-      mark(current.A, 'A', '#bf5c2e'); mark(current.P, 'P', '#167567', true); mark(current.endpoint, '到達', '#334b80');
+      g.strokeStyle = '#8a8a8a'; g.lineWidth = 1; g.setLineDash([4, 3]); g.beginPath();
+      current.path.forEach((p, i) => { const t = point(p); if (i) g.lineTo(t.x, t.y); else g.moveTo(t.x, t.y); }); g.stroke(); g.setLineDash([]);
+      mark(current.A, 'A', 'open'); mark(current.P, 'P', 'square'); mark(current.endpoint, 'E', 'dot');
     }
-    if (phase === 'calibrating') mark(hand, 'マウス', '#bf5c2e');
+    if (phase === 'calibrating') mark(hand, 'hand', 'dot');
     if (['ready', 'origin', 'calibration-ready', 'calibration-origin', 'acquiring'].includes(phase)) {
       const cfg = getConfigForView();
-      g.fillStyle = '#536c6b'; g.font = '500 15px system-ui'; g.textAlign = 'center';
-      const text = phase === 'acquiring' ? '入力を準備しています…' : phase.endsWith('origin')
-        ? '机のSへ戻したら、左ボタンを押し続ける' : cfg?.input === 'lock' ? '図の中をクリックして、入力を準備' : 'Sを押し続けて開始';
+      g.fillStyle = '#555'; g.font = `13px ${mono}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      const text = phase === 'acquiring' ? '入力を取得中' : phase.endsWith('origin')
+        ? 'Sへ戻し、左ボタンを保持' : cfg?.input === 'lock' ? 'クリックで入力を取得' : 'Sを押し続けて開始';
       g.fillText(text, l.width / 2, l.height * 0.34);
-      g.fillStyle = '#879895'; g.font = '12px system-ui'; g.fillText('上が前・右が右。図は机を上から見たものです。', l.width / 2, 24);
     }
   }
   canvas.addEventListener('pointerdown', e => {
@@ -394,7 +400,7 @@
     if (phase === 'calibration-ready') { e.preventDefault(); acquire(true); return; }
     if (phase === 'calibration-origin') {
       e.preventDefault(); phase = 'calibrating'; raw = { x: 0, z: 0 }; hand = { x: 0, z: 0 }; pointer = e.pointerId;
-      $('runTitle').textContent = 'Pまで動かして、当たったら離します'; draw(); return;
+      $('runTitle').textContent = 'Pへ移動し、接触で離す'; draw(); return;
     }
     if (!['ready', 'origin'].includes(phase) || !session) return;
     const input = session.config.input;
@@ -473,17 +479,17 @@
 
   function showResults(s) {
     viewed = s; $('results').hidden = false;
-    $('resultBadge').textContent = s.phase === 'practice' ? '練習データ' : s.status === 'complete' ? '本番・完了' : '本番・途中まで';
+    $('resultBadge').textContent = s.phase === 'practice' ? '練習' : s.status === 'complete' ? '本番・完了' : '本番・未完了';
     const complete = s.trials.filter(t => t.status === 'complete').length, aborted = s.trials.filter(t => t.status === 'aborted').length;
-    $('resultSummary').textContent = `有効 ${complete}試行 ／ 中断 ${aborted}試行。${s.config.input === 'touch' ? '画面タッチ' : 'マウス'}・${s.config.task === 'contact' ? '実物接触' : '実物なし'}。${new Date(s.createdAt).toLocaleString('ja-JP')}`;
+    $('resultSummary').textContent = `有効 ${complete} · 中断 ${aborted} · ${s.config.input === 'touch' ? 'タッチ' : 'マウス'} · ${s.config.task === 'contact' ? '接触' : '記憶'} · ${s.config.axis === 'depth' ? 'z' : 'x'}軸 · ${new Date(s.createdAt).toLocaleString('ja-JP')}`;
     const tbody = $('resultRows'); tbody.replaceChildren();
     const pct = n => n === null ? '—' : `${(n * 100).toFixed(1)}%`;
     for (const row of C.summarize(s.trials)) {
       const tr = document.createElement('tr');
       const cells = [C.CONDITIONS[row.condition], `${row.offset}%`, row.n, pct(row.towardP), pct(row.errorA),
         row.noticedRate === null ? '—' : `${Math.round(row.noticedRate * 100)}% (${row.yes}/${row.yes + row.no})`, row.unsure,
-        row.durationMs === null ? '—' : `${(row.durationMs / 1000).toFixed(2)}秒`,
-        row.contactRate === null ? '—' : `${Math.round(row.contactRate * 100)}% (${row.contactN}件)`];
+        row.durationMs === null ? '—' : `${(row.durationMs / 1000).toFixed(2)} s`,
+        row.contactRate === null ? '—' : `${Math.round(row.contactRate * 100)}% (${row.contactN})`];
       for (const text of cells) { const td = document.createElement('td'); td.textContent = String(text); tr.appendChild(td); }
       tbody.appendChild(tr);
     }

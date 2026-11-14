@@ -7,10 +7,10 @@
   'use strict';
   const VERSION = '1.0.0';
   const CONDITIONS = {
-    none: '① 音なし',
-    fixed: '② A固定',
-    warp: '③ A→P移動',
-    sensor: '④ Pへの誘導'
+    none: 'C1 音なし',
+    fixed: 'C2 A固定',
+    warp: 'C3 A→P移動',
+    sensor: 'C4 P誘導'
   };
   const clamp = (n, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, n));
   const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);

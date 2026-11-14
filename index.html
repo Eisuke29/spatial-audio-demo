@@ -47,6 +47,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 <body>
 <div class="wrap">
   <h1>立体音響デモ</h1>
+  <p class="lead"><a href="experiment.html">→ マウス・iPadで予備実験をする（4条件・軌跡・CSV保存）</a></p>
   <p class="lead">上から見た図です。真ん中があなたの頭で、上が正面です。円の中をクリック（ドラッグも可）すると、その場所から音が鳴ります。<b>ヘッドホンかイヤホンを使ってください。</b></p>
 
   <div class="main">
@@ -63,12 +64,13 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
         </div>
         <div class="field"><label for="sound">音の種類</label>
           <select id="sound">
+            <option value="pulse" selected>パルス状ノイズ（ザッ、ザッ／標準）</option>
             <option value="beep">ピッ音（くり返し）</option>
-            <option value="noise">ノイズ（ザー）</option>
+            <option value="noise">ピンクノイズ（ザー）</option>
             <option value="click">カチカチ（時計）</option>
             <option value="tone">持続音（ポー）</option>
           </select></div>
-        <div class="field"><label for="vol">音量</label><input id="vol" type="range" min="0" max="1" step="0.01" value="0.6"></div>
+        <div class="field"><label for="vol">音量</label><input id="vol" type="range" min="0" max="1" step="0.01" value="0.25"></div>
         <div class="field"><label for="height">高さ</label><input id="height" type="range" min="-60" max="60" step="1" value="0"></div>
       </div>
 
@@ -99,9 +101,10 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
           <button data-preset="front">正面</button>
           <button data-preset="right">真右</button>
           <button data-preset="back">真後ろ</button>
-          <button data-preset="arc">右側にA・P・B</button>
+          <button data-preset="lateral">前方で左右にA・P・B</button>
+          <button data-preset="arc">右側の前後にA・P・B（比較用）</button>
         </div>
-        <p class="note">「右側にA・P・B」は、体の右側の弧にVRの道具A・B（オレンジの輪）と本物P（緑の四角）を置きます。印をクリックすると、その場所から鳴ります。</p>
+        <p class="note">A・BはVRの道具、Pは本物の想定位置です。印をクリックすると、その場所から鳴ります。「右側の前後」のA=70°とB=110°は左右の手がかりが似る配置です。まず前方の左右配置でも試してください。</p>
       </div>
 
       <div class="card">
@@ -115,7 +118,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
       </div>
     </div>
   </div>
-  <p class="note">しくみ：Web Audio APIのPannerNode（HRTF）で、聞く人を中心に置き、音源の位置を変えています。高さは上が＋です。</p>
+  <p class="note">しくみ：Web Audio APIのPannerNode（HRTF）で、聞く人を中心に置き、音源の位置を変えています。高さは上が＋です。頭を固定して使います。HRTFは個人に合わせていないため、前後や上下の聞こえには個人差があります。距離の表示は設定値で、知覚された距離ではありません。</p>
 </div>
 
 <script>
@@ -136,6 +139,16 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 
   function makeBuffers(){
     const sr = ac.sampleRate;
+    // 広帯域の白色ノイズ：180msの音 + 270msの無音。立ち上がり/下がり5ms。
+    {
+      const len = Math.floor(sr*0.45), on = Math.floor(sr*0.18);
+      const b = ac.createBuffer(1,len,sr), d = b.getChannelData(0), fade = Math.max(1,Math.floor(sr*0.005));
+      for(let i=0;i<on;i++){
+        const env = Math.max(0,Math.min(1,i/fade,(on-1-i)/fade));
+        d[i] = (Math.random()*2-1)*env*0.35;
+      }
+      buffers.pulse = b;
+    }
     // ピッ音：880Hz 0.1秒 + 無音 0.35秒
     {
       const len = Math.floor(sr*0.45), b = ac.createBuffer(1,len,sr), d = b.getChannelData(0);
@@ -337,7 +350,11 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   function polar(azDeg, dist){ const a = azDeg*Math.PI/180; return {x:Math.sin(a)*dist, z:Math.cos(a)*dist}; }
   document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.preset;
-    if(k==='arc'){
+    if(k==='lateral'){
+      const A = polar(-30,0.6), P = polar(0,0.6), B = polar(30,0.6);
+      markers = [{...A,label:'A',kind:'virtual'},{...P,label:'P（本物）',kind:'real'},{...B,label:'B',kind:'virtual'}];
+      setSource({x:A.x,z:A.z});
+    } else if(k==='arc'){
       // 右側の弧（距離0.5m）に A(70°)・P(90°)・B(110°)
       const A = polar(70,0.5), P = polar(90,0.5), B = polar(110,0.5);
       markers = [{...A,label:'A',kind:'virtual'},{...P,label:'P（本物）',kind:'real'},{...B,label:'B',kind:'virtual'}];

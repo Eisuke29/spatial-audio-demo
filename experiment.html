@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>音で手の行き先は変わるか｜予備実験</title>
+  <link rel="stylesheet" href="experiment.css">
+  <script src="experiment-core.js" defer></script>
+  <script src="pilot-audio.js" defer></script>
+  <script src="experiment.js" defer></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="topnav" aria-label="ページ"><a href="index.html">← 位置当てデモ</a><span>音とハンドリダイレクション</span></nav>
+  <header class="hero">
+    <p class="eyebrow">HEAD FIXED · EXPLORATORY PILOT</p>
+    <h1>音で、手の行き先は変わるか。</h1>
+    <p>場所を覚える。目を閉じる。音を聞きながら手を伸ばす。<br>まずはマウスで、到達位置と気づきを確かめます。</p>
+    <div class="tags"><span>頭を固定</span><span>4条件をランダムに比較</span><span>端末内に保存</span></div>
+  </header>
+  <p id="message" class="message" role="status" aria-live="polite" hidden></p>
+  <p id="storageWarning" class="message error" role="alert" hidden></p>
+  <noscript><p class="message error">実験にはJavaScriptを有効にしてください。</p></noscript>
+
+  <section id="setup" aria-label="実験の準備">
+    <div class="setup-grid">
+      <form id="configForm" class="card" novalidate>
+        <div class="section-heading"><span class="step">01</span><h2>機材と条件</h2></div>
+        <fieldset id="configFields">
+          <div class="field"><label for="inputMode">手の入力</label><select id="inputMode">
+            <option value="lock">マウス：画面端を越えて動かす</option>
+            <option value="drag">マウス：画面内でドラッグ</option>
+            <option value="touch">iPad・スマホ：指でタッチ</option>
+          </select></div>
+          <p id="inputHint" class="note"></p>
+          <div class="field"><label for="taskMode">止めるタイミング</label><select id="taskMode">
+            <option value="memory">ここだと思った位置で離す（実物なし）</option>
+            <option value="contact">実物に当たったところで離す</option>
+          </select></div>
+          <div id="contactHelp" class="inset" hidden>机上の開始位置Sと実物Pに印を付け、実物は動かしません。マウスのどこを実物に当てるかもそろえてください。下の「Pを登録」で、同じ当て方を使います。接触は試行後に自分で回答します。</div>
+          <div class="two-fields">
+            <div><label for="device">聞く機材</label><select id="device"><option value="headphones">ヘッドホン</option><option value="earphones">イヤホン</option></select></div>
+            <div><label for="connection">接続</label><select id="connection"><option value="wired">有線</option><option value="wireless">無線</option></select></div>
+          </div>
+          <div class="field"><label for="equipment">機種のメモ</label><input id="equipment" maxlength="100" placeholder="任意：使った機材名"></div>
+          <div class="field"><label for="sound">音</label><select id="sound"><option value="pulse">パルス状の広帯域ノイズ（標準）</option><option value="continuous">連続する広帯域ノイズ</option></select></div>
+          <div class="field"><label for="volume">音量 <output id="volumeValue">20%</output></label><input id="volume" type="range" min="0.01" max="0.5" step="0.01" value="0.20"></div>
+          <div class="buttons"><button type="button" id="testLeft">左だけ鳴らす</button><button type="button" id="testRight">右だけ鳴らす</button></div>
+          <label class="check"><input type="checkbox" id="checkedAudio">左右が合っていて、無理なく聞ける音量にした</label>
+          <p class="note">両耳で装着し、OSや機材側の追加の空間オーディオは切って、装着・音量をそろえます。音量の%は音圧dBを表しません。</p>
+          <details>
+            <summary>試行数・配置・マウスの調整</summary>
+            <div class="detail-body">
+              <div class="field"><label for="offsets">ずらす量（%）</label><input id="offsets" value="0, 15, 30" inputmode="decimal"></div>
+              <p class="note">S→Pの基準距離を100%とした割合です。0%と、各量の両方向を入れます。実寸cmではありません。</p>
+              <div class="field"><label for="axis">ずらす向き</label><select id="axis"><option value="lateral">左右（まずはこちら）</option><option value="depth">手を伸ばす向き・遠近</option></select></div>
+              <p class="note">遠近は方向の手がかりが弱い条件です。音量だけで正確な距離を提示できるとは扱いません。</p>
+              <div class="field"><label for="repeats">組の繰り返し</label><input id="repeats" type="number" min="1" max="10" value="2"></div>
+              <div class="field" id="scaleField"><label for="mouseScale">基準距離の移動量</label><input id="mouseScale" type="number" min="40" max="10000" value="260"></div>
+              <p class="note">画面端を越える入力の感度です。P登録で実際の移動から決められます。OSの加速やマウスの向きが変わると座標もずれます。</p>
+            </div>
+          </details>
+          <div id="referenceControls" class="reference">
+            <div><b>机上の基準P</b><p id="referenceStatus" class="note">未登録。まずは実物なしで試せます。</p></div>
+            <div class="buttons"><button type="button" id="registerP">机上のPを登録</button><button type="button" id="clearP" hidden>登録を外す</button></div>
+          </div>
+        </fieldset>
+        <div class="start-row"><div><b id="trialCount">本番 40試行</b><p class="note">練習は4試行。練習データは別に保存。</p></div><div class="buttons"><button id="practice" type="button">4回練習する</button><button id="start" type="button" class="primary">本番を始める →</button></div></div>
+      </form>
+
+      <aside class="card guide">
+        <div class="section-heading"><span class="step">02</span><h2>1回の流れ</h2></div>
+        <ol class="flow">
+          <li><b>開始位置へ戻す</b><span>頭は正面に固定。机のSにマウスを戻します。画面のSを押し、そのままボタンを持ち続けます。</span></li>
+          <li><b>目標Aを2秒覚える</b><span>手を止めて、画面のオレンジの点を覚えます。</span></li>
+          <li><b>暗くなったら目を閉じる</b><span>少し待つと「ピッ」。合図のあとに、目を閉じたまま手を伸ばします。</span></li>
+          <li><b>届いたら離す</b><span>ここだと思った位置、または実物に当たった位置でボタンを離します。目を開けて「ずれを感じたか」に回答します。</span></li>
+        </ol>
+        <div class="inset"><b>マウスを持って当てる、で始められます。</b><p>画面端を越える入力ではカーソルを隠します。机に開始位置の印を付け、毎回そこへ戻してください。途中でやめるときはEscです。</p></div>
+        <details open><summary>iPadの狭い範囲も必要？</summary><p class="note detail-body">今はマウスからで十分です。iPadは指の絶対位置を取れる別の確認に使えます。触れる範囲が違うので、マウスの結果とは分けて保存・比較します。</p></details>
+        <details><summary>比較する4条件と結果の読み方</summary><div class="detail-body note">
+          <p>① 空間的な誘導音なし。② 覚えたAから一定の音。③ 手の進み具合で音源がAからPへ移動。④ 手からPへの向きと、近さによる音量・間隔で誘導。</p>
+          <p>開始の「ピッ」は全条件共通。②と③は同じ音・音量で、距離減衰を使いません。④は独自の2次元誘導で、Takahara方式の再現ではありません。</p>
+          <p>Pは同じ位置に固定し、覚えるAをPの周りにずらします。本番中は条件・ずらし量・正解を表示しません。自分で試すため、期待の影響は残ります。</p>
+          <p>「ずれを感じた」は記憶した位置との差の自己報告です。手のリダイレクションの検出閾値は測れません。0%で「感じた」と答えた割合も見ます。</p>
+        </div></details>
+      </aside>
+    </div>
+  </section>
+
+  <section id="run" class="card run-card" aria-label="試行" hidden>
+    <div class="run-header"><div><p id="sessionLabel" class="eyebrow">PRACTICE</p><h2 id="runTitle">開始位置へ戻してください</h2></div><div class="progress-area"><span id="progressText"></span><progress id="progressBar" max="40" value="0"></progress></div></div>
+    <p id="runInstruction" class="instruction" aria-live="polite"></p>
+    <div class="canvas-shell"><canvas id="stage" width="1000" height="650" tabindex="0" aria-label="上から見た机。Sを押し続け、合図のあと目標へ動かし、届いたら離してください。"></canvas><div id="trialOverlay" aria-hidden="true" hidden></div></div>
+    <div id="responses" hidden>
+      <fieldset class="response-group"><legend>覚えた位置と、最後に手が届いた位置にずれを感じましたか？</legend><div class="buttons" id="noticedButtons"><button data-noticed="yes" type="button" aria-pressed="false">感じた</button><button data-noticed="no" type="button" aria-pressed="false">感じなかった</button><button data-noticed="unsure" type="button" aria-pressed="false">分からない</button></div></fieldset>
+      <fieldset id="contactQuestion" class="response-group" hidden><legend>実物に当たりましたか？</legend><div class="buttons" id="contactButtons"><button data-contact="yes" type="button" aria-pressed="false">当たった</button><button data-contact="no" type="button" aria-pressed="false">当たらなかった</button><button data-contact="unsure" type="button" aria-pressed="false">分からない</button></div></fieldset>
+      <button id="saveAnswer" type="button" class="primary" disabled>回答を保存する</button>
+    </div>
+    <p id="feedback" class="feedback" hidden></p>
+    <div class="run-footer"><button id="next" type="button" class="primary" hidden>開始位置へ戻して次へ →</button><button id="cancelCalibration" type="button" hidden>登録をやめる</button><button id="finish" type="button">ここまで保存して終了</button><span class="note" id="saveStatus">端末内に保存します</span></div>
+  </section>
+
+  <section id="results" class="card" aria-label="結果" hidden>
+    <div class="section-heading"><span class="step">03</span><h2>今回の結果</h2><span id="resultBadge" class="badge"></span></div>
+    <p id="resultSummary"></p>
+    <p class="note">位置の単位はS→Pの基準距離に対する%。「P寄り」はAからP方向への到達位置の投影で、0はA、正の値はP側です。ずらし0%では定義しません。</p>
+    <div class="table-scroll"><table><thead><tr><th>条件</th><th>ずらし</th><th>有効数</th><th>P寄り平均</th><th>Aとの誤差</th><th>「ずれた」</th><th>不明</th><th>到達時間</th><th>接触</th></tr></thead><tbody id="resultRows"></tbody></table></div>
+    <p class="note">「ずれた」は感じた／（感じた＋感じなかった）。不明は分母から除き、別に示します。0%の値はずれがないときの回答率です。平均は少数の探索結果で、効果や閾値の確定には使いません。</p>
+    <div class="buttons"><button id="exportTrials" type="button" class="primary">到達・回答CSV</button><button id="exportPaths" type="button">軌跡CSV</button><button id="exportJson" type="button">全データJSON</button><button id="backSetup" type="button">準備に戻る</button></div>
+  </section>
+
+  <section id="saved" class="card saved-card" aria-label="保存したデータ" hidden><div><h2>このブラウザに保存したデータ</h2><p class="note">同じブラウザ・同じURLで再開できます。別の端末では別保存です。CSVかJSONも保存してください。</p></div><div class="buttons"><select id="savedSessions" aria-label="保存したセッション"></select><button id="viewSaved" type="button">結果を見る</button><button id="resumeSaved" type="button">続きを行う</button></div></section>
+  <footer><p>探索用の予備実験 · 外部へのデータ送信なし · <a href="EXPERIMENT.md">手順・記録項目・限界</a></p></footer>
+</main>
+</body>
+</html>

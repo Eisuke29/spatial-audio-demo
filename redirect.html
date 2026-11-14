@@ -5,527 +5,484 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>聴覚リダイレクション デモ</title>
 <style>
-:root{
-  --bg:#f3f4f7;--card:#fff;--ink:#16181d;--muted:#6b7280;--line:#e5e7eb;
-  --a:#f97316;--p:#10b981;--e:#3b82f6;--snd:#a855f7;--accent:#4f46e5;
-  font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
-}
+:root{--bg:#f3f4f7;--card:#fff;--ink:#16181d;--muted:#6b7280;--line:#e5e7eb;--a:#f97316;--p:#10b981;--e:#3b82f6;--snd:#a855f7;--accent:#4f46e5;
+  font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6}
+body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
 [hidden]{display:none!important}
-header{display:flex;align-items:center;gap:16px;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--line)}
-header h1{font-size:17px;margin:0;font-weight:700}
-.status{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
-.pill{font-size:12px;padding:4px 10px;border-radius:99px;background:#f1f5f9;color:var(--muted);cursor:pointer;border:0;font:inherit;font-size:12px}
-.pill.ok{background:#dcfce7;color:#166534}
-.pill.warn{background:#fef3c7;color:#92400e}
-.app{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px 24px;max-width:1400px;margin:0 auto}
-.card{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 1px 2px #0000000d}
-.side{display:flex;flex-direction:column;gap:14px}
-h2{font-size:13px;color:var(--muted);font-weight:600;margin:0 0 10px}
-.conds{display:grid;gap:8px}
-.cond{display:flex;gap:10px;align-items:flex-start;text-align:left;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;font:inherit}
-.cond b{display:block;font-size:14px}
-.cond span{font-size:12px;color:var(--muted)}
-.cond .ic{font-size:20px;line-height:1.2}
-.cond[aria-pressed=true]{border-color:var(--accent);background:#eef2ff}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0}
-.row label{font-size:14px}
-.row output{font-weight:700;font-variant-numeric:tabular-nums;min-width:4em;text-align:right}
+header{display:flex;align-items:center;gap:14px;padding:12px 22px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:16px;margin:0}
+.app{display:grid;grid-template-columns:340px 1fr;gap:18px;padding:18px 22px;max-width:1500px;margin:0 auto}
+.card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 2px #0000000d}
+.side{display:flex;flex-direction:column;gap:12px}
+h2{font-size:13px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+h2 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#eef2ff;color:var(--accent);font-size:12px}
+h2 .ok{margin-left:auto;font-size:12px;color:#166534;background:#dcfce7;border-radius:99px;padding:1px 9px;font-weight:600}
+h2 .ng{margin-left:auto;font-size:12px;color:#92400e;background:#fef3c7;border-radius:99px;padding:1px 9px;font-weight:600}
+.muted{color:var(--muted);font-size:12px}
+.btn{border:0;border-radius:10px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}
+.btn.sub{background:#eef2ff;color:var(--accent)}
+.btn.small{padding:5px 10px;font-size:12px;border-radius:8px}
+.btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
+input[type=number]{width:70px;font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:8px}
 input[type=range]{width:100%;accent-color:var(--accent)}
 .seg{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;gap:2px}
-.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:6px 4px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
-.seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px #0002}
-.toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
-.toggle input{width:18px;height:18px;accent-color:var(--accent)}
-.btn{border:0;border-radius:12px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}
-.btn.sub{background:#eef2ff;color:var(--accent)}
-.btn.small{padding:7px 12px;font-size:13px;border-radius:9px}
-.main{display:flex;flex-direction:column;gap:14px;min-width:0}
-.stagecard{padding:0;overflow:hidden;position:relative}
-.steps{display:flex;gap:6px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.steps span{font-size:13px;padding:5px 12px;border-radius:99px;background:#f1f5f9;color:#9ca3af}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:6px 4px;font:inherit;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 2px #0002}
+.grid7{display:grid;grid-template-columns:auto 1fr 1fr;gap:4px 6px;align-items:center;font-size:12px;margin:6px 0}
+.grid7 .h{color:var(--muted);text-align:center}
+.cell{display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid var(--line);border-radius:8px;padding:5px;cursor:pointer;background:#fff;font:inherit;font-size:12px}
+.cell[aria-pressed=true]{border-color:var(--accent);background:#eef2ff;color:var(--accent);font-weight:700}
+.cell.wide{grid-column:2 / 4}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.prog{height:6px;background:#eef2ff;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.prog i{display:block;height:100%;background:var(--accent);width:0}
+.main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stage{position:relative;padding:0;overflow:hidden}
+.steps{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.steps span{font-size:12px;padding:4px 11px;border-radius:99px;background:#f1f5f9;color:#9ca3af}
 .steps span.now{background:var(--accent);color:#fff;font-weight:700}
-.steps span.done{background:#e0e7ff;color:var(--accent)}
-canvas{display:block;width:100%;height:min(62vh,600px);background:#fff;cursor:pointer}
-.banner{position:absolute;left:0;right:0;top:50px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;text-align:center;padding:20px}
-.banner big{font-size:clamp(22px,3vw,34px);font-weight:800}
-.banner small{font-size:15px;color:var(--muted)}
-.banner:not(.dark){justify-content:flex-end;padding-bottom:150px}
-.banner.dark{background:#0b0d12;color:#e5e7eb}
-.banner.dark small{color:#9ca3af}
-.result{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
-.pull{font-size:44px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-.pull small{font-size:16px;font-weight:600;color:var(--muted);margin-left:6px}
-.meter{position:relative;height:14px;border-radius:99px;background:linear-gradient(90deg,var(--a),var(--p));margin:28px 0 6px}
-.meter i{position:absolute;top:-6px;width:4px;height:26px;background:var(--e);border-radius:2px;transform:translateX(-2px)}
-.meter-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
-.facts{font-size:14px;color:var(--muted)}
-.facts b{color:var(--ink)}
-.ask{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.ask p{margin:0;font-weight:700;font-size:16px;flex-basis:100%}
-.sum{display:grid;gap:8px}
-.sumrow{display:grid;grid-template-columns:150px 1fr 60px 90px;gap:10px;align-items:center;font-size:13px}
-.bar{height:10px;background:#f1f5f9;border-radius:99px;position:relative;overflow:hidden}
-.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:99px}
-.muted{color:var(--muted);font-size:13px}
-.hist{font-size:13px;width:100%;border-collapse:collapse;margin-top:12px}
-.hist td,.hist th{padding:5px 6px;border-top:1px solid var(--line);text-align:left}
-.hist th{color:var(--muted);font-weight:600}
-dialog{border:0;border-radius:18px;padding:24px;max-width:520px;box-shadow:0 20px 60px #0003}
-dialog::backdrop{background:#0006}
-dialog h3{margin:0 0 12px}
-dialog ol{padding-left:20px;margin:8px 0 16px}
-dialog li{margin:6px 0}
-.dialog-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-@media(max-width:900px){.app{grid-template-columns:1fr;padding:16px}.result{grid-template-columns:1fr}.sumrow{grid-template-columns:110px 1fr 50px 70px}header{flex-wrap:wrap;padding:12px 16px}}
+.steps .info{margin-left:auto;background:none;color:var(--muted);padding:0}
+canvas{display:block;width:100%;height:min(60vh,580px);background:#fff;cursor:pointer}
+.banner{position:absolute;left:0;right:0;top:45px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px 20px 0;gap:4px;pointer-events:none;text-align:center}
+.banner big{font-size:clamp(18px,2.2vw,26px);font-weight:800;background:#ffffffe0;padding:2px 12px;border-radius:10px}
+.banner small{font-size:14px;color:var(--muted);background:#ffffffe0;padding:0 10px;border-radius:8px}
+.banner.dark{background:#0b0d12;justify-content:center;padding-top:0}
+.banner.dark big{background:none;color:#e5e7eb}.banner.dark small{background:none;color:#9ca3af}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:14px 24px;align-items:center}
+.pull{font-size:40px;font-weight:800;line-height:1}
+.pull small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:4px}
+.facts ul{margin:0;padding-left:18px}
+table.heat{border-collapse:separate;border-spacing:3px;font-size:12px;width:100%}
+.heat th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px}
+.heat th:first-child{text-align:left;white-space:nowrap}
+.heat td{text-align:center;border-radius:6px;padding:5px 2px;min-width:52px}
+.heat td b{display:block;font-size:13px}
+.heat td span{font-size:10px;opacity:.8}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;margin-top:8px}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:4px}
+@media(max-width:960px){.app{grid-template-columns:1fr;padding:12px}}
 </style>
 </head>
 <body>
-<header>
-  <h1>🎧 聴覚リダイレクション デモ</h1>
-  <div class="status">
-    <button class="pill" id="pillPhones">ヘッドホン確認</button>
-    <button class="pill" id="pillCal">距離の調整</button>
-  </div>
-</header>
+<header><h1>🎧 聴覚リダイレクション デモ</h1><span class="muted">音だけを頼りにAへ手を伸ばしたとき、手は本物Pへ引っぱられるか</span></header>
 
 <div class="app">
-  <aside class="side">
-    <div class="card">
-      <h2>音の条件</h2>
-      <div class="conds" id="conds"></div>
-    </div>
-    <div class="card">
-      <h2>置き方</h2>
-      <div class="row"><label for="dist">本物Pまでの距離</label><output id="distOut"></output></div>
-      <input type="range" id="dist" min="25" max="60" step="1" value="45">
-      <div class="row"><label for="off">AとPのずれ</label><output id="offOut"></output></div>
-      <input type="range" id="off" min="0" max="25" step="1" value="10">
-      <div class="row" style="margin-top:14px"><label>ずらす向き</label></div>
-      <div class="seg" id="dir">
-        <button data-v="lr" aria-pressed="true">ランダム</button><button data-v="l" aria-pressed="false">左</button><button data-v="r" aria-pressed="false">右</button><button data-v="far" aria-pressed="false">奥</button><button data-v="near" aria-pressed="false">手前</button>
-      </div>
-      <div class="row" style="margin-top:14px"><label class="toggle"><input type="checkbox" id="real">Pに本物の物を置く</label></div>
-      <div class="row"><label for="vol">音量</label><output id="volOut"></output></div>
-      <input type="range" id="vol" min="0" max="1" step="0.01" value="0.6">
-    </div>
-    <div class="card muted" id="howto">
-      <b style="color:var(--ink)">やり方</b><br>
-      ① 机のスタート印にマウスを置く<br>
-      ② <b>スペース</b>で開始 → Aを2秒覚える<br>
-      ③ ピッで目を閉じたまま、音を頼りにAへ手を伸ばす<br>
-      ④ 止めたら<b>クリック</b>
-    </div>
-  </aside>
+<aside class="side">
+  <div class="card">
+    <h2><span class="n">1</span>ヘッドホン<span id="phSt" class="ng">未確認</span></h2>
+    <div class="btns"><button class="btn sub small" id="tl">◀ 左</button><button class="btn sub small" id="tr">右 ▶</button><button class="btn small" id="phOk">左右OK</button></div>
+    <div class="row"><span>音量</span><input type="range" id="vol" min="0" max="1" step="0.01" value="0.6" style="width:60%"></div>
+  </div>
 
-  <section class="main">
-    <div class="card stagecard">
-      <div class="steps" id="steps"><span>スタート位置へ</span><span>Aを覚える</span><span>目を閉じる</span><span>手を伸ばす</span><span>結果</span></div>
-      <canvas id="cv"></canvas>
-      <div class="banner" id="banner"><big id="bannerBig"></big><small id="bannerSmall"></small></div>
+  <div class="card">
+    <h2><span class="n">2</span>本物Pの位置<span id="pSt" class="ng">未登録</span></h2>
+    <p class="muted" style="margin:0 0 8px">机にスタート印と本物の物を置き、マウスを<b>スタート印から物までドラッグ</b>して記録します。</p>
+    <div class="btns"><button class="btn" id="regP">ドラッグで記録する</button></div>
+    <div class="row"><span>スタート→Pの実際の距離</span><span><input type="number" id="pcm" min="10" max="90" value="45"> cm</span></div>
+    <p class="muted" id="pInfo" style="margin:0"></p>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">3</span>試し方</h2>
+    <div class="seg" id="mode"><button data-v="auto" aria-pressed="true">自動で順番に</button><button data-v="manual" aria-pressed="false">手動で選ぶ</button></div>
+
+    <div id="autoBox">
+      <div class="row" style="margin-top:12px"><b style="font-size:12px">使う条件</b><span class="muted">押して外せる</span></div>
+      <div class="grid7" id="condGrid"></div>
+      <div class="row"><b style="font-size:12px">ずらす角度（AとPの差）</b></div>
+      <div class="chips" id="angChips"></div>
+      <div class="row"><span class="muted">各組み合わせの回数</span><input type="number" id="reps" min="1" max="5" value="1"></div>
+      <div class="row"><label class="muted"><input type="checkbox" id="blind" checked> 条件を伏せる（結果で答え合わせ）</label></div>
+      <div class="prog"><i id="progBar"></i></div>
+      <div class="row" style="margin:0"><span class="muted" id="progTxt"></span><button class="btn sub small" id="restart">最初から</button></div>
     </div>
 
-    <div class="card" id="askCard" hidden>
-      <div class="ask">
-        <p>止めた位置は、覚えたAの場所とずれていましたか？</p>
-        <button class="btn sub" data-ans="yes">ずれていた</button>
-        <button class="btn sub" data-ans="no">ずれていなかった</button>
-        <button class="btn sub" data-ans="unsure">わからない</button>
-      </div>
+    <div id="manualBox" hidden>
+      <div class="grid7" id="condGridM"></div>
+      <div class="row"><b style="font-size:12px">ずらす角度</b><b id="angOut"></b></div>
+      <input type="range" id="angM" min="-45" max="45" step="1" value="20">
+      <div class="muted">マイナス＝AがPより左、プラス＝右</div>
     </div>
+  </div>
 
-    <div class="card" id="resultCard" hidden>
-      <div class="result">
-        <div>
-          <h2 id="resCond"></h2>
-          <div class="pull" id="resPull"></div>
-          <div class="meter"><i id="resMark"></i></div>
-          <div class="meter-lbl"><span>覚えたA</span><span>本物P</span></div>
-        </div>
-        <div class="facts" id="resFacts"></div>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:8px"><button class="btn" id="again">次へ（スペース）</button></div>
-    </div>
+  <details class="card muted"><summary style="cursor:pointer"><b>角度の根拠（先行研究）</b></summary>
+    <ul style="padding-left:16px;margin:8px 0 0">
+      <li>見える手の検出閾値：約±4.5°（Zenner &amp; Krüger 2019、−14〜+14°を2°刻みで測定）</li>
+      <li>質問の仕方を変えると 9〜17°（Katori 2025）</li>
+      <li>0・4・8・16°で比較（Gonzalez &amp; Follmer 2019）、16°回し（Azmandian 2016）</li>
+      <li>13本のまとめで 2〜45°（レビュー）</li>
+      <li>気づいても許せる上限 40°（Cheng 2017）</li>
+    </ul>
+    <p style="margin:6px 0 0">視界の外は見える手より大きくずらせるはず、という仮説なので、0°から40°まで広く取りました。</p>
+  </details>
+</aside>
 
-    <div class="card">
-      <div class="row" style="margin:0 0 6px"><h2 style="margin:0">今までの結果：音にどれだけ引っぱられたか</h2><button class="btn sub small" id="clear">リセット</button></div>
-      <div class="sum" id="sum"></div>
-      <details><summary class="muted" style="cursor:pointer;margin-top:10px">1回ずつ見る</summary><table class="hist" id="hist"></table></details>
+<section class="main">
+  <div class="card stage">
+    <div class="steps" id="steps"><span>スタートへ</span><span>Aの音を聞く</span><span>手を伸ばす</span><span>答える</span><span>結果</span><span class="info" id="trialInfo"></span></div>
+    <canvas id="cv"></canvas>
+    <div class="banner" id="banner"><big id="bBig"></big><small id="bSmall"></small></div>
+  </div>
+
+  <div class="card" id="resCard" hidden>
+    <div class="facts">
+      <div class="pull" id="rPull"></div>
+      <ul id="rList"></ul>
     </div>
-  </section>
+    <div class="legend"><span><i style="background:var(--a)"></i>目指したA（音で教えた）</span><span><i style="background:var(--p)"></i>本物P</span><span><i style="background:var(--snd)"></i>音源の動き</span><span><i style="background:var(--e)"></i>手の軌跡</span></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin:0 0 6px"><h2 style="margin:0">まとめ：Pへ引っぱられた割合（0%=Aへ行った、100%=Pへ行った）</h2><button class="btn sub small" id="clearAll">結果を消す</button></div>
+    <div style="overflow-x:auto"><table class="heat" id="heat"></table></div>
+    <p class="muted" style="margin:6px 0 0">各マス：平均の引っぱり ／ 下の小さい数字＝「ずれを感じた」回数/回答数・試した回数。0°は引っぱり先がないので、Aからの角度のずれ（°）を表示。</p>
+  </div>
+</section>
 </div>
-
-<dialog id="phonesDlg">
-  <h3>ヘッドホン確認</h3>
-  <p class="muted">有線のヘッドホンがおすすめ。空間オーディオ機能はオフに。</p>
-  <div style="display:flex;gap:8px;margin:12px 0"><button class="btn sub" id="tl">◀ 左から鳴らす</button><button class="btn sub" id="tr">右から鳴らす ▶</button></div>
-  <div class="dialog-actions"><button class="btn" id="phonesOk">左右OK</button></div>
-</dialog>
-
-<dialog id="calDlg">
-  <h3>距離の調整（cm合わせ）</h3>
-  <ol>
-    <li>机にテープで<b>スタート印</b>と、そのまっすぐ<b>40cm奥の印</b>を付ける</li>
-    <li>「調整を始める」を押し、マウスをスタート印に置いて<b>スペース</b></li>
-    <li>40cmの印までまっすぐ動かして<b>スペース</b></li>
-  </ol>
-  <p class="muted" id="calNow"></p>
-  <div class="dialog-actions"><button class="btn sub" id="calClose">閉じる</button><button class="btn" id="calStart">調整を始める</button></div>
-</dialog>
 
 <script>
 (() => {
-  const $ = id => document.getElementById(id);
-  const CONDS = [
-    { id: 'none',  ic: '🔇', name: '音なし',              desc: '記憶だけで手を伸ばす' },
-    { id: 'A',     ic: '📍', name: 'Aから鳴りっぱなし',    desc: '覚えた場所Aから同じ音' },
-    { id: 'warp',  ic: '🌀', name: 'ワーピング',          desc: '手が進むほど音源がAからPへ移る' },
-    { id: 'Psens', ic: '📡', name: 'Pからバックセンサー',  desc: 'Pから鳴り、Pに近いほど速く大きく' },
-    { id: 'random',ic: '🎲', name: 'おまかせ（条件を隠す）', desc: '上の4つとずれをランダムに。結果で答え合わせ' },
-  ];
-  const NAME = Object.fromEntries(CONDS.map(c => [c.id, c.name]));
-  let cond = 'warp', dir = 'lr';
-  const store = {
-    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
-  };
-  let pxPerCm = store.get('rd.pxPerCm', null);
-  let phonesOk = store.get('rd.phones', false);
-  let history = store.get('rd.history', []);
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
 
-  // ---------- 条件カード ----------
-  const condsEl = $('conds');
-  CONDS.forEach(c => {
-    const b = document.createElement('button'); b.className = 'cond'; b.dataset.id = c.id;
-    b.innerHTML = `<span class="ic">${c.ic}</span><div><b>${c.name}</b><span>${c.desc}</span></div>`;
-    b.onclick = () => { if (busy()) return; cond = c.id; syncConds(); };
-    condsEl.appendChild(b);
-  });
-  function syncConds() { condsEl.querySelectorAll('.cond').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === cond))); }
-  syncConds();
-  $('dir').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; dir = b.dataset.v; $('dir').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); draw(); });
-  function syncOut() {
-    $('distOut').textContent = $('dist').value + ' cm';
-    $('offOut').textContent = $('off').value + ' cm';
-    $('volOut').textContent = Math.round($('vol').value * 100) + '%';
-    if (master) master.gain.value = Number($('vol').value);
-    draw();
-  }
-  ['dist', 'off', 'vol'].forEach(id => $(id).addEventListener('input', syncOut));
+// ===== 7条件 =====
+const CONDS = [
+  { id: 'none', loc: null, type: null, name: '音なし' },
+  { id: 'A-c', loc: 'A', type: 'c', name: 'A × 鳴りっぱなし' },
+  { id: 'A-s', loc: 'A', type: 's', name: 'A × バックセンサー' },
+  { id: 'W-c', loc: 'W', type: 'c', name: 'ワーピング × 鳴りっぱなし' },
+  { id: 'W-s', loc: 'W', type: 's', name: 'ワーピング × バックセンサー' },
+  { id: 'P-c', loc: 'P', type: 'c', name: 'P × 鳴りっぱなし' },
+  { id: 'P-s', loc: 'P', type: 's', name: 'P × バックセンサー' },
+];
+const CMAP = Object.fromEntries(CONDS.map(c => [c.id, c]));
+const LEVELS = [0, 5, 10, 15, 20, 30, 40];
 
-  // ---------- 音 ----------
-  let ac = null, master = null, panner = null, burst = null;
-  function ensureAudio() {
-    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
-    ac = new (window.AudioContext || window.webkitAudioContext)();
-    master = ac.createGain(); master.gain.value = Number($('vol').value); master.connect(ac.destination);
-    panner = ac.createPanner();
-    panner.panningModel = 'HRTF'; panner.distanceModel = 'inverse'; panner.refDistance = 0.3; panner.rolloffFactor = 1;
-    panner.connect(master);
-    const l = ac.listener;
-    if (l.forwardX) { l.forwardX.value = 0; l.forwardY.value = 0; l.forwardZ.value = -1; l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0; }
-    else l.setOrientation(0, 0, -1, 0, 1, 0);
-    const sr = ac.sampleRate, n = Math.floor(sr * 0.15), f = Math.floor(sr * 0.005);
-    burst = ac.createBuffer(1, n, sr); const d = burst.getChannelData(0);
-    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.min(1, i / f, (n - 1 - i) / f) * 0.5;
-  }
-  // 机の座標(cm, x右・y奥, 原点=スタート) → 頭を原点とする音の座標(m)
-  const HEAD_BEHIND = 20, DESK_BELOW = 30;
-  function setSource(p) {
-    const x = p.x / 100, y = -DESK_BELOW / 100, z = -(p.y + HEAD_BEHIND) / 100, t = ac.currentTime;
-    if (panner.positionX) { panner.positionX.setTargetAtTime(x, t, 0.01); panner.positionY.setTargetAtTime(y, t, 0.01); panner.positionZ.setTargetAtTime(z, t, 0.01); }
-    else panner.setPosition(x, y, z);
-  }
-  function pulse(t, gain, dest) {
-    const s = ac.createBufferSource(); s.buffer = burst;
-    const g = ac.createGain(); g.gain.value = gain; s.connect(g); g.connect(dest); s.start(t);
-  }
-  function beep() {
-    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
-    o.frequency.value = 1000; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
-    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.12);
-  }
-  function testSide(side) {
-    ensureAudio();
-    const p = ac.createStereoPanner(); p.pan.value = side; p.connect(master);
-    for (let i = 0; i < 3; i++) pulse(ac.currentTime + i * 0.25, 0.8, p);
-  }
-  let schedTimer = null, nextT = 0;
-  function startLoop() {
-    nextT = ac.currentTime + 0.02;
-    const tick = () => {
-      if (!trial || trial.cond === 'none') return;
-      const { interval, gain } = soundState();
-      while (nextT < ac.currentTime + 0.08) { pulse(nextT, gain, panner); nextT += interval; }
-      schedTimer = setTimeout(tick, 20);
-    };
-    tick();
-  }
-  function stopLoop() { clearTimeout(schedTimer); schedTimer = null; }
+let settings = Object.assign({ conds: CONDS.map(c => c.id), levels: [0, 5, 10, 20, 30, 40], reps: 1, blind: true, mode: 'auto', manualCond: 'W-c', manualAng: 20 }, store.get('ar.settings', {}));
+let reg = store.get('ar.reg', null);          // { Pc:{x,y}（マウスの移動量）, cm }
+let phonesOk = store.get('ar.phones', false);
+let history = store.get('ar.history', []);
+let plan = store.get('ar.plan', null);        // { trials:[{cond,ang}], i }
 
-  // 音源の場所と鳴り方
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  function sourcePos() {
-    const { A, P, cond } = trial;
-    if (cond === 'A') return A;
-    if (cond === 'Psens') return P;
-    if (cond === 'warp') {
-      const M = { x: (A.x + P.x) / 2, y: (A.y + P.y) / 2 };
-      const q = clamp((hand.x * M.x + hand.y * M.y) / (M.x * M.x + M.y * M.y), 0, 1);
-      const s = q * q * (3 - 2 * q);
-      return { x: A.x + (P.x - A.x) * s, y: A.y + (P.y - A.y) * s };
-    }
-    return null;
-  }
-  function soundState() {
-    if (trial.cond === 'Psens') {
-      const d = Math.hypot(hand.x - trial.P.x, hand.y - trial.P.y);
-      const k = clamp(1 - d / 40, 0, 1);
-      return { interval: 0.6 - 0.48 * k, gain: 0.35 + 0.65 * k };
-    }
-    return { interval: 0.4, gain: 0.8 };
-  }
-
-  // ---------- 入力（Pointer Lock） ----------
-  const cv = $('cv'), ctx = cv.getContext('2d');
-  let hand = { x: 0, y: 0 }, live = { x: 0, y: 0 };
-  let state = 'idle'; // idle | cal0 | cal1 | preview | dark | reach | ask | result
-  let trial = null, timers = [];
-  const busy = () => ['preview', 'dark', 'reach', 'ask', 'cal0', 'cal1'].includes(state);
-  const locked = () => document.pointerLockElement === cv;
-  function lock() {
-    ensureAudio();
-    try {
-      const r = cv.requestPointerLock({ unadjustedMovement: true });
-      if (r && r.catch) r.catch(() => cv.requestPointerLock());
-    } catch { cv.requestPointerLock(); }
-  }
-  cv.addEventListener('click', () => { if (!locked()) lock(); });
-  document.addEventListener('pointerlockchange', () => {
-    if (!locked() && ['preview', 'dark', 'reach'].includes(state)) cancel('マウスの固定が外れたので中止しました');
-    if (!locked() && ['cal0', 'cal1'].includes(state)) { state = 'idle'; }
-    live = { x: 0, y: 0 }; render();
-  });
-  let calRaw = { x: 0, y: 0 };
-  document.addEventListener('mousemove', e => {
-    if (!locked()) return;
-    if (state === 'cal1') { calRaw.x += e.movementX; calRaw.y -= e.movementY; render(); return; }
-    const k = pxPerCm || 30;
-    const dx = e.movementX / k, dy = -e.movementY / k;
-    if (state === 'reach') {
-      hand.x += dx; hand.y += dy;
-      trial.path.push({ x: hand.x, y: hand.y });
-      const s = trial.cond !== 'none' ? sourcePos() : null;
-      if (s) { setSource(s); trial.srcPath.push(s); }
-    } else { live.x += dx; live.y += dy; draw(); }
-  });
-  document.addEventListener('mousedown', e => {
-    if (!locked() || e.button !== 0) return;
-    if (state === 'reach') finishReach();
-  });
-  document.addEventListener('keydown', e => {
-    if (e.code !== 'Space') return;
-    if (document.querySelector('dialog[open]')) return;
-    e.preventDefault();
-    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
-    if (state === 'cal0') { state = 'cal1'; calRaw = { x: 0, y: 0 }; render(); return; }
-    if (state === 'cal1') {
-      const d = Math.hypot(calRaw.x, calRaw.y);
-      if (d > 20) { pxPerCm = d / 40; store.set('rd.pxPerCm', pxPerCm); }
-      state = 'idle'; live = { x: 0, y: 0 }; render(); return;
-    }
-    if (state === 'reach') { finishReach(); return; }
-    if (state === 'idle' || state === 'result') { if (!locked()) { lock(); return; } startTrial(); }
-  });
-
-  // ---------- 1回の流れ ----------
-  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
-  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
-  function layoutAP() {
-    const D = Number($('dist').value), off = Number($('off').value);
-    const P = { x: 0, y: D };
-    let d = dir;
-    if (d === 'lr') d = Math.random() < 0.5 ? 'l' : 'r';
-    const v = { l: [-1, 0], r: [1, 0], far: [0, 1], near: [0, -1] }[d];
-    return { P, A: { x: P.x + v[0] * off, y: P.y + v[1] * off }, off };
-  }
-  function startTrial() {
-    ensureAudio(); clearTimers();
-    let c = cond, hidden = false, { A, P, off } = layoutAP();
-    if (c === 'random') {
-      hidden = true;
-      c = ['none', 'A', 'warp', 'Psens'][Math.floor(Math.random() * 4)];
-      const offs = [0, off, off, off];
-      const o = offs[Math.floor(Math.random() * offs.length)];
-      const ux = off ? (A.x - P.x) / off : 0, uy = off ? (A.y - P.y) / off : 0;
-      A = { x: P.x + ux * o, y: P.y + uy * o }; off = o;
-    }
-    trial = { cond: c, hidden, A, P, off, path: [{ x: 0, y: 0 }], srcPath: [], real: $('real').checked, t0: 0 };
-    $('askCard').hidden = true; $('resultCard').hidden = true;
-    state = 'preview'; render();
-    later(() => { state = 'dark'; render(); }, 2000);
-    later(() => {
-      hand = { x: 0, y: 0 }; trial.path = [{ x: 0, y: 0 }];
-      state = 'reach'; trial.t0 = performance.now(); beep();
-      if (trial.cond !== 'none') { const s = sourcePos(); setSource(s); trial.srcPath.push(s); later(startLoop, 150); }
-      render();
-    }, 3200);
-  }
-  function finishReach() {
-    stopLoop(); clearTimers();
-    trial.E = { ...hand }; trial.ms = performance.now() - trial.t0;
-    state = 'ask'; render();
-    if (document.pointerLockElement) document.exitPointerLock();
-    $('askCard').hidden = false;
-  }
-  function cancel(msg) { stopLoop(); clearTimers(); trial = null; state = 'idle'; $('askCard').hidden = true; flash = msg; render(); }
-  let flash = '';
-  document.querySelectorAll('[data-ans]').forEach(b => b.onclick = () => {
-    if (state !== 'ask') return;
-    trial.noticed = b.dataset.ans;
-    const { A, P, E } = trial, dx = P.x - A.x, dy = P.y - A.y, L2 = dx * dx + dy * dy;
-    trial.pull = L2 > 0 ? ((E.x - A.x) * dx + (E.y - A.y) * dy) / L2 : null;
-    trial.errA = Math.hypot(E.x - A.x, E.y - A.y); trial.errP = Math.hypot(E.x - P.x, E.y - P.y);
-    history.push({ cond: trial.cond, off: trial.off, pull: trial.pull, errA: trial.errA, errP: trial.errP, noticed: trial.noticed, real: trial.real, hidden: trial.hidden, ms: Math.round(trial.ms), t: Date.now() });
-    store.set('rd.history', history);
-    $('askCard').hidden = true; state = 'result'; showResult(); render(); renderSummary();
-  });
-  $('again').onclick = () => { $('resultCard').hidden = true; trial = null; state = 'idle'; render(); lock(); };
-
-  function showResult() {
-    const t = trial, ans = { yes: 'ずれていた', no: 'ずれていなかった', unsure: 'わからない' }[t.noticed];
-    $('resCond').textContent = (t.hidden ? '🎲 答え：' : '') + NAME[t.cond] + `（ずれ ${t.off.toFixed(0)} cm）`;
-    if (t.pull === null) {
-      $('resPull').innerHTML = `${t.errA.toFixed(1)}<small>cm Aからずれた</small>`;
-      $('resMark').parentElement.hidden = true; $('resMark').parentElement.nextElementSibling.hidden = true;
-    } else {
-      $('resPull').innerHTML = `${Math.round(t.pull * 100)}%<small>Pへ引っぱられた</small>`;
-      $('resMark').parentElement.hidden = false; $('resMark').parentElement.nextElementSibling.hidden = false;
-      $('resMark').style.left = clamp(t.pull * 100, 0, 100) + '%';
-    }
-    $('resFacts').innerHTML =
-      `止めた位置は 覚えたAから <b>${t.errA.toFixed(1)} cm</b>、本物Pから <b>${t.errP.toFixed(1)} cm</b><br>` +
-      `あなたの答え：<b>${ans}</b><br>` +
-      (t.pull === null ? 'ずれ0cmの回（比較用）' : t.pull >= 0.7 && t.noticed === 'no' ? '→ <b style="color:var(--p)">気づかずにPへ誘導された</b>' :
-        t.pull >= 0.7 ? '→ Pへ誘導されたが、気づかれた' : t.pull >= 0.3 ? '→ 途中まで引っぱられた' : '→ ほぼ記憶どおり（引っぱられていない）') +
-      `<br><span style="font-size:12px">到達まで ${(t.ms / 1000).toFixed(1)} 秒</span>`;
-    $('resultCard').hidden = false;
-  }
-
-  function renderSummary() {
-    const el = $('sum'); el.innerHTML = '';
-    const rows = ['none', 'A', 'warp', 'Psens'].map(c => {
-      const h = history.filter(r => r.cond === c && r.pull !== null);
-      const n = h.length, mean = n ? h.reduce((s, r) => s + r.pull, 0) / n : null;
-      const ans = h.filter(r => r.noticed !== 'unsure'), yes = ans.filter(r => r.noticed === 'yes').length;
-      return { c, n, mean, notice: ans.length ? yes / ans.length : null };
+// ===== 左パネル =====
+function buildGrid(el, manual) {
+  el.innerHTML = '<span></span><span class="h">鳴りっぱなし</span><span class="h">バックセンサー</span>';
+  const rows = [['なし', ['none']], ['A', ['A-c', 'A-s']], ['ワーピング', ['W-c', 'W-s']], ['P', ['P-c', 'P-s']]];
+  rows.forEach(([lab, ids]) => {
+    el.insertAdjacentHTML('beforeend', `<span>${lab}</span>`);
+    ids.forEach(id => {
+      const b = document.createElement('button'); b.className = 'cell' + (ids.length === 1 ? ' wide' : ''); b.dataset.id = id;
+      b.textContent = id === 'none' ? '音なし' : (CMAP[id].type === 'c' ? '鳴りっぱなし' : 'バックセンサー');
+      b.onclick = () => {
+        if (busy()) return;
+        if (manual) settings.manualCond = id;
+        else { const s = new Set(settings.conds); s.has(id) ? s.delete(id) : s.add(id); if (!s.size) return; settings.conds = CONDS.map(c => c.id).filter(x => s.has(x)); plan = null; }
+        save(); syncPanel(); render();
+      };
+      el.appendChild(b);
     });
-    if (!history.length) { el.innerHTML = '<p class="muted" style="margin:0">まだありません。1回やるとここに条件ごとの平均が出ます。</p>'; }
-    else {
-      el.insertAdjacentHTML('beforeend', '<div class="sumrow muted"><span>条件</span><span>Pへの引っぱり（平均）</span><span>回数</span><span>気づいた率</span></div>');
-      rows.forEach(r => el.insertAdjacentHTML('beforeend',
-        `<div class="sumrow"><b>${NAME[r.c]}</b><div class="bar"><i style="width:${r.mean === null ? 0 : clamp(r.mean * 100, 0, 100)}%"></i></div>` +
-        `<span>${r.mean === null ? '—' : Math.round(r.mean * 100) + '%'} <span class="muted">${r.n}回</span></span><span>${r.notice === null ? '—' : Math.round(r.notice * 100) + '%'}</span></div>`));
-    }
-    const ans = { yes: 'ずれていた', no: 'なし', unsure: '?' };
-    $('hist').innerHTML = '<tr><th>#</th><th>条件</th><th>ずれ</th><th>引っぱり</th><th>Aから</th><th>答え</th></tr>' +
-      history.map((r, i) => `<tr><td>${i + 1}</td><td>${r.hidden ? '🎲 ' : ''}${NAME[r.cond]}</td><td>${r.off} cm</td><td>${r.pull === null ? '—' : Math.round(r.pull * 100) + '%'}</td><td>${r.errA.toFixed(1)} cm</td><td>${ans[r.noticed]}</td></tr>`).reverse().join('');
-  }
-  $('clear').onclick = () => { if (confirm('今までの結果を消しますか？')) { history = []; store.set('rd.history', history); renderSummary(); } };
+  });
+}
+buildGrid($('condGrid'), false); buildGrid($('condGridM'), true);
+LEVELS.forEach(a => {
+  const b = document.createElement('button'); b.className = 'chip'; b.dataset.a = a; b.textContent = a ? `±${a}°` : '0°';
+  b.onclick = () => { if (busy()) return; const s = new Set(settings.levels); s.has(a) ? s.delete(a) : s.add(a); if (!s.size) return; settings.levels = LEVELS.filter(x => s.has(x)); plan = null; save(); syncPanel(); render(); };
+  $('angChips').appendChild(b);
+});
+$('mode').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; settings.mode = b.dataset.v; save(); syncPanel(); render(); });
+$('reps').oninput = () => { settings.reps = clamp(Number($('reps').value) || 1, 1, 5); plan = null; save(); syncPanel(); render(); };
+$('blind').onchange = () => { settings.blind = $('blind').checked; save(); render(); };
+$('angM').oninput = () => { settings.manualAng = Number($('angM').value); save(); syncPanel(); render(); };
+$('restart').onclick = () => { if (busy()) return; plan = null; save(); syncPanel(); render(); };
+$('pcm').oninput = () => { if (reg) { reg.cm = clamp(Number($('pcm').value) || 45, 10, 90); store.set('ar.reg', reg); } syncPanel(); draw(); };
+$('vol').oninput = () => { if (master) master.gain.value = Number($('vol').value); };
+$('clearAll').onclick = () => { if (busy()) return; if (confirm('今までの結果を消しますか？')) { history = []; plan = null; save(); renderHeat(); syncPanel(); render(); } };
 
-  // ---------- 表示 ----------
-  const STEP = { idle: 0, preview: 1, dark: 2, reach: 3, ask: 4, result: 4 };
-  function render() {
-    const i = STEP[state] ?? -1;
-    $('steps').querySelectorAll('span').forEach((s, k) => { s.className = k === i ? 'now' : k < i ? 'done' : ''; });
-    const big = $('bannerBig'), small = $('bannerSmall'), bn = $('banner');
-    bn.classList.toggle('dark', state === 'dark' || state === 'reach');
-    bn.hidden = false;
-    if (state === 'cal0') { big.textContent = 'マウスをスタート印に置いて スペース'; small.textContent = '距離の調整 1/2'; }
-    else if (state === 'cal1') {
-      const d = Math.hypot(calRaw.x, calRaw.y);
-      big.textContent = '40cmの印まで まっすぐ動かして スペース'; small.textContent = `距離の調整 2/2 ・ 動いた量 ${Math.round(d)}`;
-    }
-    else if (!locked() && (state === 'idle' || state === 'result')) {
-      if (state === 'result') bn.hidden = true;
-      else { big.textContent = 'ここをクリックして開始'; small.textContent = flash || 'マウスが画面内に固定されます（Escで解除）'; }
-    }
-    else if (state === 'idle') { big.textContent = 'スタート印にマウスを置いて スペース'; small.textContent = flash || '青い点が今のマウス位置（調整の確認用）'; bn.style.background = 'transparent'; }
-    else if (state === 'preview') { big.textContent = 'Aの場所を覚えて'; small.textContent = '2秒後に暗くなります'; }
-    else if (state === 'dark') { big.textContent = '目を閉じて'; small.textContent = 'ピッと鳴ったら手を伸ばす'; }
-    else if (state === 'reach') { big.textContent = '音を頼りに Aへ手を伸ばす'; small.textContent = trial.real ? '物に当たったらクリック' : '止めたらクリック'; }
-    else if (state === 'ask' || state === 'result') bn.hidden = true;
-    if (!bn.classList.contains('dark')) bn.style.background = 'transparent'; else bn.style.background = '';
-    if (state !== 'idle') flash = '';
-    updatePills(); draw();
-  }
-  function updatePills() {
-    const p = $('pillPhones'), c = $('pillCal');
-    p.textContent = phonesOk ? '✓ ヘッドホン' : 'ヘッドホン確認'; p.className = 'pill ' + (phonesOk ? 'ok' : 'warn');
-    c.textContent = pxPerCm ? '✓ cm調整済み' : '⚠ cm未調整'; c.className = 'pill ' + (pxPerCm ? 'ok' : 'warn');
-  }
+function save() { store.set('ar.settings', settings); store.set('ar.plan', plan); store.set('ar.history', history); }
+function makePlan() {
+  const t = [];
+  for (let r = 0; r < settings.reps; r++) for (const c of settings.conds) for (const a of settings.levels) t.push({ cond: c, ang: a === 0 ? 0 : a * (Math.random() < 0.5 ? -1 : 1) });
+  for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; }
+  return { trials: t, i: 0 };
+}
+function syncPanel() {
+  $('phSt').textContent = phonesOk ? '確認済み' : '未確認'; $('phSt').className = phonesOk ? 'ok' : 'ng';
+  $('pSt').textContent = reg ? '記録済み' : '未登録'; $('pSt').className = reg ? 'ok' : 'ng';
+  $('regP').textContent = reg ? 'ドラッグで記録し直す' : 'ドラッグで記録する';
+  if (reg) { $('pcm').value = reg.cm; const ph = Math.atan2(reg.Pc.x, reg.Pc.y) * 180 / Math.PI;
+    $('pInfo').textContent = `Pの向き：正面から${Math.abs(ph).toFixed(0)}°${ph > 0.5 ? '右' : ph < -0.5 ? '左' : ''}、距離 ${reg.cm} cm`; }
+  else $('pInfo').textContent = '';
+  $('mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === settings.mode)));
+  $('autoBox').hidden = settings.mode !== 'auto'; $('manualBox').hidden = settings.mode !== 'manual';
+  $('condGrid').querySelectorAll('.cell').forEach(b => b.setAttribute('aria-pressed', String(settings.conds.includes(b.dataset.id))));
+  $('condGridM').querySelectorAll('.cell').forEach(b => b.setAttribute('aria-pressed', String(settings.manualCond === b.dataset.id)));
+  $('angChips').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(settings.levels.includes(Number(b.dataset.a)))));
+  $('reps').value = settings.reps; $('blind').checked = settings.blind;
+  $('angM').value = settings.manualAng; $('angOut').textContent = `${settings.manualAng > 0 ? '+' : ''}${settings.manualAng}°`;
+  if (!plan) { plan = makePlan(); save(); }
+  const n = plan.trials.length;
+  $('progBar').style.width = (plan.i / n * 100) + '%';
+  $('progTxt').textContent = plan.i >= n ? `全${n}回 終わりました` : `${plan.i} / ${n} 回（${settings.conds.length}条件 × ${settings.levels.length}角度 × ${settings.reps}回）`;
+}
 
-  let view = null;
-  function resize() {
-    const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
-    cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw();
-  }
-  function draw() {
-    const W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
-    const top = 50, minY = -8, maxY = 72;
-    const sc = Math.min((H - top - 20) / (maxY - minY), W / 90);
-    const ox = W / 2, oy = H - 20 + minY * sc;
-    const pt = p => [ox + p.x * sc, oy - p.y * sc];
-    ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-    // 10cm目盛り
-    ctx.font = '11px system-ui'; ctx.fillStyle = '#9ca3af'; ctx.textAlign = 'left';
-    for (let y = 0; y <= 70; y += 10) {
-      const [, py] = pt({ x: 0, y }); ctx.strokeStyle = y ? '#f1f5f9' : '#d1d5db'; ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
-      if (y) ctx.fillText(y + ' cm', 8, py - 3);
-    }
-    for (let x = -40; x <= 40; x += 10) { const [px] = pt({ x, y: 0 }); ctx.strokeStyle = '#f8fafc'; ctx.beginPath(); ctx.moveTo(px, top); ctx.lineTo(px, H); ctx.stroke(); }
-    const dot = (p, color, r, label, ring) => {
-      const [x, y] = pt(p); ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
-      if (ring) { ctx.lineWidth = 3; ctx.strokeStyle = color; ctx.stroke(); } else { ctx.fillStyle = color; ctx.fill(); }
-      if (label) { ctx.fillStyle = color; ctx.font = '700 13px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - r - 8); }
-    };
-    dot({ x: 0, y: 0 }, '#111827', 7, 'スタート');
-    if (state === 'idle' && locked()) dot(live, '#3b82f6', 6);
-    if (state === 'cal1') { const k = Math.hypot(calRaw.x, calRaw.y) / 40 || 1; dot({ x: 0, y: 40 }, '#9ca3af', 8, '40cm', true); }
-    if (!trial) {
-      if (state === 'idle') { const D = Number($('dist').value), off = Number($('off').value); const sx = { l: -1, r: 1 }[dir] || 0, sy = { far: 1, near: -1 }[dir] || 0;
-        ctx.globalAlpha = 0.35; dot({ x: 0, y: D }, '#10b981', 9, '本物P');
-        if (dir === 'lr') { dot({ x: -off, y: D }, '#f97316', 9, 'A?', true); dot({ x: off, y: D }, '#f97316', 9, 'A?', true); }
-        else dot({ x: sx * off, y: D + sy * off }, '#f97316', 9, 'A', true);
-        ctx.globalAlpha = 1; }
-      return;
-    }
-    if (state === 'preview') dot(trial.A, '#f97316', 14, 'A', true);
-    if (state === 'result') {
-      // 音源の通り道
-      if (trial.srcPath.length > 1) { ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.strokeStyle = '#a855f7'; ctx.beginPath(); trial.srcPath.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); }
-      ctx.lineWidth = 2.5; ctx.strokeStyle = '#93c5fd'; ctx.beginPath(); trial.path.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
-      dot(trial.A, '#f97316', 12, '覚えたA', true);
-      const [px, py] = pt(trial.P); ctx.fillStyle = '#10b981'; ctx.fillRect(px - 9, py - 9, 18, 18); ctx.font = '700 13px system-ui'; ctx.textAlign = 'center'; ctx.fillText('本物P', px, py + 26);
-      dot(trial.E, '#3b82f6', 7, '止めた位置');
-      ctx.font = '12px system-ui'; ctx.textAlign = 'left'; ctx.fillStyle = '#6b7280';
-      ctx.fillText('— 手の軌跡', W - 170, top + 16); ctx.fillStyle = '#a855f7'; ctx.fillText('- - 音源の動き', W - 170, top + 34);
-    }
-  }
-  window.addEventListener('resize', resize);
+// ===== 音 =====
+let ac = null, master = null, panner = null, burst = null;
+function ensureAudio() {
+  if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = Number($('vol').value); master.connect(ac.destination);
+  panner = ac.createPanner(); panner.panningModel = 'HRTF'; panner.distanceModel = 'inverse'; panner.refDistance = 0.3; panner.rolloffFactor = 1;
+  panner.connect(master);
+  const l = ac.listener;
+  if (l.forwardX) { l.forwardX.value = 0; l.forwardY.value = 0; l.forwardZ.value = -1; l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0; } else l.setOrientation(0, 0, -1, 0, 1, 0);
+  const sr = ac.sampleRate, n = Math.floor(sr * 0.15), f = Math.floor(sr * 0.005);
+  burst = ac.createBuffer(1, n, sr); const d = burst.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.min(1, i / f, (n - 1 - i) / f) * 0.5;
+}
+const HEAD_BEHIND = 20, EAR_ABOVE = 30; // 耳はスタート印の20cm後ろ・30cm上と仮定
+function setSource(p) {
+  const x = p.x / 100, y = -EAR_ABOVE / 100, z = -(p.y + HEAD_BEHIND) / 100, t = ac.currentTime;
+  if (panner.positionX) { panner.positionX.setTargetAtTime(x, t, 0.01); panner.positionY.setTargetAtTime(y, t, 0.01); panner.positionZ.setTargetAtTime(z, t, 0.01); }
+  else panner.setPosition(x, y, z);
+}
+function pulse(t, gain, dest) { const s = ac.createBufferSource(); s.buffer = burst; const g = ac.createGain(); g.gain.value = gain; s.connect(g); g.connect(dest); s.start(t); }
+function beep() { const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime; o.frequency.value = 1000;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.12); }
+function testSide(s) { ensureAudio(); const p = ac.createStereoPanner(); p.pan.value = s; p.connect(master); for (let i = 0; i < 3; i++) pulse(ac.currentTime + i * 0.25, 0.8, p); }
+$('tl').onclick = () => testSide(-1); $('tr').onclick = () => testSide(1);
+$('phOk').onclick = () => { phonesOk = true; store.set('ar.phones', true); syncPanel(); };
 
-  // ---------- ダイアログ ----------
-  $('pillPhones').onclick = () => $('phonesDlg').showModal();
-  $('tl').onclick = () => testSide(-1); $('tr').onclick = () => testSide(1);
-  $('phonesOk').onclick = () => { phonesOk = true; store.set('rd.phones', true); $('phonesDlg').close(); updatePills(); };
-  $('pillCal').onclick = () => { if (busy()) return; $('calNow').textContent = pxPerCm ? `今の値：1cm = ${pxPerCm.toFixed(1)}` : 'まだ調整していません（仮の値で動きます）'; $('calDlg').showModal(); };
-  $('calClose').onclick = () => $('calDlg').close();
-  $('calStart').onclick = () => { $('calDlg').close(); state = 'cal0'; lock(); render(); };
+let schedTimer = null, nextT = 0;
+function startLoop() {
+  stopLoop(); nextT = ac.currentTime + 0.03;
+  const tick = () => {
+    const st = soundNow(); if (!st) return;
+    setSource(st.pos);
+    while (nextT < ac.currentTime + 0.08) { pulse(nextT, st.gain, panner); nextT += st.interval; }
+    schedTimer = setTimeout(tick, 20);
+  };
+  tick();
+}
+function stopLoop() { clearTimeout(schedTimer); schedTimer = null; }
 
-  syncOut(); renderSummary(); resize(); render();
-  if (!phonesOk) $('phonesDlg').showModal();
+// 今鳴らす音：場所（A・ワーピング・P）× 鳴り方（鳴りっぱなし・バックセンサー）
+function srcPos() {
+  const { A, P } = trial, c = CMAP[trial.cond];
+  if (state === 'listen' || c.loc === 'A') return A;
+  if (c.loc === 'P') return P;
+  if (c.loc === 'W') { const R = Math.hypot(P.x, P.y), q = clamp(Math.hypot(hand.x, hand.y) / R, 0, 1), s = q * q * (3 - 2 * q);
+    return { x: A.x + (P.x - A.x) * s, y: A.y + (P.y - A.y) * s }; }
+  return null;
+}
+function soundNow() {
+  if (!trial) return null;
+  if (state === 'listen') return { pos: trial.A, interval: 0.35, gain: 0.8 };
+  if (state !== 'reach') return null;
+  const c = CMAP[trial.cond]; if (!c.loc) return null;
+  const pos = srcPos();
+  if (c.type === 'c') return { pos, interval: 0.35, gain: 0.8 };
+  const R = Math.hypot(trial.P.x, trial.P.y), d = Math.hypot(hand.x - pos.x, hand.y - pos.y), k = clamp(1 - d / (0.7 * R), 0, 1);
+  return { pos, interval: 0.6 - 0.5 * k, gain: 0.3 + 0.7 * k };
+}
+
+// ===== 状態とマウス =====
+const cv = $('cv'), ctx = cv.getContext('2d');
+let state = 'idle'; // idle | reg0 | reg1 | listen | reach | answer | result
+let trial = null, last = null, hand = { x: 0, y: 0 }, regRaw = { x: 0, y: 0 }, regPath = [], timers = [], note = '';
+const busy = () => ['reg0', 'reg1', 'listen', 'reach', 'answer'].includes(state);
+const locked = () => document.pointerLockElement === cv;
+const cmPerCount = () => reg ? reg.cm / Math.hypot(reg.Pc.x, reg.Pc.y) : 0.03;
+function lock() {
+  ensureAudio();
+  try { const r = cv.requestPointerLock({ unadjustedMovement: true }); if (r && r.catch) r.catch(() => { try { cv.requestPointerLock(); } catch {} }); }
+  catch { cv.requestPointerLock(); }
+}
+document.addEventListener('pointerlockerror', () => { note = 'マウスを固定できませんでした。1秒待ってもう一度クリックしてください。'; render(); });
+document.addEventListener('pointerlockchange', () => {
+  if (!locked() && busy()) {
+    stopLoop(); clearTimers();
+    if (state === 'reg0' || state === 'reg1') { state = 'idle'; note = '記録を中止しました'; }
+    else { trial = null; state = 'idle'; note = '中断しました（同じ回をやり直します）'; }
+  }
+  render();
+});
+cv.addEventListener('click', () => { if (!locked()) lock(); });
+cv.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('contextmenu', e => { if (locked()) e.preventDefault(); });
+$('regP').onclick = () => { if (busy()) return; ensureAudio(); state = 'reg0'; note = ''; render(); };
+
+document.addEventListener('mousemove', e => {
+  if (!locked()) return;
+  if (state === 'reg1') { regRaw.x += e.movementX; regRaw.y -= e.movementY; regPath.push({ ...regRaw }); draw(); return; }
+  if (state === 'reach') {
+    const k = cmPerCount(); hand.x += e.movementX * k; hand.y -= e.movementY * k;
+    trial.path.push({ ...hand }); const s = srcPos(); if (s && CMAP[trial.cond].loc) trial.src.push({ ...s });
+  }
+});
+let lockedAt = 0;
+document.addEventListener('pointerlockchange', () => { if (locked()) lockedAt = performance.now(); });
+document.addEventListener('mousedown', e => {
+  if (!locked() || performance.now() - lockedAt < 150) return; // 固定したクリック自体は無視
+  if (state === 'reg0' && e.button === 0) { state = 'reg1'; regRaw = { x: 0, y: 0 }; regPath = [{ x: 0, y: 0 }]; render(); return; }
+  if (state === 'reach') { endReach(); return; }
+  if (state === 'answer') { answer(e.button === 0 ? 'yes' : e.button === 2 ? 'no' : 'unsure'); return; }
+  if ((state === 'idle' || state === 'result') && e.button === 0) startTrial();
+});
+document.addEventListener('mouseup', () => {
+  if (state !== 'reg1') return;
+  if (Math.hypot(regRaw.x, regRaw.y) < 30) { state = 'reg0'; note = '短すぎます。スタート印から物までドラッグしてください'; render(); return; }
+  reg = { Pc: { ...regRaw }, cm: clamp(Number($('pcm').value) || 45, 10, 90) };
+  store.set('ar.reg', reg); state = 'idle'; note = 'Pを記録しました。スタート印に戻してクリックで1回目'; syncPanel(); render();
+});
+document.addEventListener('keydown', e => {
+  if (state === 'answer' && ['Digit1', 'Digit2', 'Digit3'].includes(e.code)) answer({ Digit1: 'yes', Digit2: 'no', Digit3: 'unsure' }[e.code]);
+});
+
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+function later(f, ms) { timers.push(setTimeout(f, ms)); }
+function rot(p, deg) { const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return { x: p.x * c + p.y * s, y: -p.x * s + p.y * c }; } // 上から見て時計回り（右）が＋
+function currentSpec() {
+  if (settings.mode === 'manual') return { cond: settings.manualCond, ang: settings.manualAng, blind: false };
+  if (!plan) plan = makePlan();
+  if (plan.i >= plan.trials.length) return null;
+  return { ...plan.trials[plan.i], blind: settings.blind };
+}
+function startTrial() {
+  if (!reg) { note = '先に左の「2 本物Pの位置」を記録してください'; render(); return; }
+  const spec = currentSpec(); if (!spec) { note = '全部終わりました。「最初から」で新しく始められます'; render(); return; }
+  ensureAudio(); clearTimers(); note = '';
+  const k = cmPerCount(), P = { x: reg.Pc.x * k, y: reg.Pc.y * k }, A = rot(P, spec.ang);
+  trial = { ...spec, P, A, path: [{ x: 0, y: 0 }], src: [] };
+  hand = { x: 0, y: 0 }; state = 'listen'; startLoop(); render();
+  later(() => { stopLoop(); }, 1900);
+  later(() => { hand = { x: 0, y: 0 }; trial.path = [{ x: 0, y: 0 }]; state = 'reach'; beep(); trial.t0 = performance.now(); later(startLoop, 120); render(); }, 2400);
+}
+function endReach() {
+  stopLoop(); clearTimers(); trial.E = { ...hand }; trial.ms = performance.now() - trial.t0; state = 'answer'; render();
+}
+const deg = p => Math.atan2(p.x, p.y) * 180 / Math.PI;
+function answer(v) {
+  const t = trial; t.noticed = v;
+  const aA = deg(t.A), aP = deg(t.P), aE = deg(t.E);
+  t.devA = aE - aA;                                  // Aからの角度ずれ（右が+）
+  t.pull = t.ang ? (aE - aA) / (aP - aA) : null;     // 0=A, 1=P
+  t.distP = Math.hypot(t.E.x - t.P.x, t.E.y - t.P.y);
+  t.reach = Math.hypot(t.E.x, t.E.y);
+  history.push({ cond: t.cond, ang: t.ang, pull: t.pull, devA: t.devA, distP: t.distP, reach: t.reach, noticed: v, ms: Math.round(t.ms), mode: settings.mode, time: Date.now() });
+  if (settings.mode === 'auto' && plan) plan.i++;
+  last = t; trial = null; state = 'result'; save(); syncPanel(); showResult(); renderHeat(); render();
+}
+
+// ===== 結果 =====
+function showResult() {
+  const t = last, c = CMAP[t.cond], ans = { yes: '感じた', no: '感じなかった', unsure: 'わからない' }[t.noticed];
+  const side = t.ang > 0 ? '（AはPの右）' : t.ang < 0 ? '（AはPの左）' : '';
+  $('rPull').innerHTML = t.pull === null ? `${t.devA >= 0 ? '+' : ''}${t.devA.toFixed(1)}°<small>Aからのずれ（ずらし0°）</small>`
+    : `${Math.round(t.pull * 100)}%<small>Pへ引っぱられた</small>`;
+  const verdict = t.pull === null ? '' : t.pull >= 0.7 && t.noticed === 'no' ? '<li><b style="color:var(--p)">気づかないままPへ誘導された</b></li>'
+    : t.pull >= 0.7 ? '<li>Pへ誘導されたが、ずれに気づいた</li>' : t.pull >= 0.3 ? '<li>途中まで引っぱられた</li>' : '<li>ほぼAへ行った（引っぱられていない）</li>';
+  $('rList').innerHTML = `<li>条件：<b>${c.name}</b>${t.blind ? '（伏せていた）' : ''}</li>` +
+    `<li>ずらし：<b>${t.ang > 0 ? '+' : ''}${t.ang}°</b> ${side}</li>` +
+    `<li>手が止まった向き：Aから <b>${t.devA >= 0 ? '右へ' : '左へ'}${Math.abs(t.devA).toFixed(1)}°</b>、Pからの距離 <b>${t.distP.toFixed(1)} cm</b>、伸ばした距離 ${t.reach.toFixed(0)} cm</li>` +
+    `<li>ずれを：<b>${ans}</b>　（${(t.ms / 1000).toFixed(1)}秒）</li>` + verdict;
+  $('resCard').hidden = false;
+}
+function renderHeat() {
+  const levels = [...new Set(history.map(h => Math.abs(h.ang)))].sort((a, b) => a - b);
+  const el = $('heat');
+  if (!history.length) { el.innerHTML = '<tr><td class="muted" style="text-align:left">まだありません</td></tr>'; return; }
+  let html = '<tr><th>条件</th>' + levels.map(a => `<th>${a}°</th>`).join('') + '</tr>';
+  for (const c of CONDS) {
+    html += `<tr><th>${c.name}</th>`;
+    for (const a of levels) {
+      const h = history.filter(r => r.cond === c.id && Math.abs(r.ang) === a);
+      if (!h.length) { html += '<td style="background:#f8fafc;color:#cbd5e1">—</td>'; continue; }
+      const ans = h.filter(r => r.noticed !== 'unsure'), yes = ans.filter(r => r.noticed === 'yes').length;
+      if (a === 0) { const m = h.reduce((s, r) => s + Math.abs(r.devA), 0) / h.length;
+        html += `<td style="background:#f1f5f9"><b>${m.toFixed(1)}°</b><span>${yes}/${ans.length}・${h.length}回</span></td>`; continue; }
+      const m = h.reduce((s, r) => s + r.pull, 0) / h.length, k = clamp(m, 0, 1);
+      html += `<td style="background:rgba(79,70,229,${0.08 + 0.8 * k});color:${k > 0.55 ? '#fff' : 'inherit'}"><b>${Math.round(m * 100)}%</b><span>${yes}/${ans.length}・${h.length}回</span></td>`;
+    }
+    html += '</tr>';
+  }
+  el.innerHTML = html;
+}
+
+// ===== 表示 =====
+const STEP = { idle: 0, listen: 1, reach: 2, answer: 3, result: 4 };
+function render() {
+  const i = STEP[state] ?? -1;
+  $('steps').querySelectorAll('span:not(.info)').forEach((s, k) => s.className = k === i ? 'now' : '');
+  const spec = settings.mode === 'auto' && plan ? plan.trials[plan.i] : null;
+  $('trialInfo').textContent = trial ? (trial.blind ? '条件は伏せています' : `${CMAP[trial.cond].name} ／ ${trial.ang > 0 ? '+' : ''}${trial.ang}°`)
+    : settings.mode === 'auto' ? (spec ? `次：${plan.i + 1}回目${settings.blind ? '' : `（${CMAP[spec.cond].name} ／ ${spec.ang}°）`}` : '')
+    : `次：${CMAP[settings.manualCond].name} ／ ${settings.manualAng}°`;
+  const bn = $('banner'), B = $('bBig'), S = $('bSmall');
+  bn.classList.toggle('dark', state === 'listen' || state === 'reach' || state === 'answer');
+  let big = '', small = note;
+  if (!locked() && !['listen', 'reach', 'answer'].includes(state)) {
+    big = 'ここをクリックして始める';
+    small = note || (state === 'reg0' ? '固定したら、スタート印から物までドラッグします' : 'マウスが画面に固定されます（やめるときは Esc）');
+  }
+  else if (state === 'reg0') { big = 'スタート印にマウスを置き、ボタンを押したまま本物Pまでなぞる'; small = note || 'Pに当たったらボタンを離す'; }
+  else if (state === 'reg1') { big = '本物Pまでなぞって、ボタンを離す'; small = ''; }
+  else if (state === 'idle' || state === 'result') {
+    big = !reg ? '左の「2 本物Pの位置」を先に記録' : 'スタート印にマウスを戻して クリック';
+    small = note || (reg ? 'Aの音が2秒鳴る → ピッ → 目を閉じたまま手を伸ばす' : '');
+  }
+  else if (state === 'listen') { big = '目を閉じて、Aの音を覚える'; small = 'まだ動かさない'; }
+  else if (state === 'reach') { big = '音を頼りに Aへ手を伸ばす'; small = '止めたらクリック'; }
+  else if (state === 'answer') { big = 'Aとのずれを感じた？'; small = '左クリック＝感じた　／　右クリック＝感じなかった　／　ホイール押し（または3）＝わからない'; }
+  B.textContent = big; S.textContent = small; B.hidden = !big; S.hidden = !small;
+  if (state !== 'result' && state !== 'idle') $('resCard').hidden = true;
+  draw();
+}
+
+function resize() { const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); cv.width = r.width * d; cv.height = r.height * d; ctx.setTransform(d, 0, 0, d, 0, 0); draw(); }
+window.addEventListener('resize', resize);
+function draw() {
+  const W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
+  ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+  const R = reg ? reg.cm : 45, k = cmPerCount();
+  const ext = state === 'reg1' ? Math.max(R, Math.hypot(regRaw.x, regRaw.y) * k) : R;
+  const sc = Math.max(0.5, Math.min((H - 110) / (ext * 1.15), (W - 40) / (ext * 2.1)));
+  const ox = W / 2, oy = H - 34;
+  const pt = p => [ox + p.x * sc, oy - p.y * sc];
+  ctx.lineWidth = 1; ctx.font = '11px system-ui'; ctx.fillStyle = '#9ca3af'; ctx.textAlign = 'left';
+  for (let r = 10; r <= ext * 1.2; r += 10) { ctx.strokeStyle = '#f1f5f9'; ctx.beginPath(); ctx.arc(ox, oy, r * sc, Math.PI, 2 * Math.PI); ctx.stroke(); ctx.fillText(r + 'cm', ox + r * sc + 3, oy - 3); }
+  ctx.strokeStyle = '#e5e7eb'; ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke();
+  const P = reg ? { x: reg.Pc.x * k, y: reg.Pc.y * k } : null;
+  if (P && !['listen', 'reach', 'answer', 'reg1'].includes(state)) {
+    const lv = settings.mode === 'auto' ? settings.levels : [Math.abs(settings.manualAng)];
+    lv.filter(a => a).forEach(a => [-1, 1].forEach(s => { const q = rot(P, a * s), [x, y] = pt({ x: q.x * 1.08, y: q.y * 1.08 });
+      ctx.strokeStyle = '#eef2ff'; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(x, y); ctx.stroke(); ctx.fillStyle = '#a5b4fc'; ctx.textAlign = 'center'; ctx.fillText((s > 0 ? '+' : '−') + a + '°', x, y - 4); }));
+  }
+  const dot = (p, color, r, label, ring, below) => { const [x, y] = pt(p); ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
+    if (ring) { ctx.lineWidth = 3; ctx.strokeStyle = color; ctx.stroke(); } else { ctx.fillStyle = color; ctx.fill(); }
+    if (label) { ctx.fillStyle = color; ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, below ? y + r + 15 : y - r - 7); } };
+  const line = (pts, color, w, dash) => { if (pts.length < 2) return; ctx.setLineDash(dash || []); ctx.lineWidth = w; ctx.strokeStyle = color; ctx.beginPath(); pts.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); };
+  dot({ x: 0, y: 0 }, '#111827', 6, 'スタート', false, true);
+  if (state === 'reg1') { line(regPath.map(p => ({ x: p.x * k, y: p.y * k })), '#94a3b8', 2); const c = regPath[regPath.length - 1]; dot({ x: c.x * k, y: c.y * k }, '#10b981', 7); return; }
+  if (P) { const [x, y] = pt(P); ctx.fillStyle = '#10b981'; ctx.fillRect(x - 9, y - 9, 18, 18); ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText('本物P', x, y + 24); }
+  if (state === 'result' && last) {
+    const t = last;
+    ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.strokeStyle = '#fdba74'; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(...pt(t.A)); ctx.stroke(); ctx.setLineDash([]);
+    line(t.src, '#a855f7', 3, [6, 4]);
+    line(t.path, '#3b82f6', 2.5);
+    dot(t.A, '#f97316', 11, '目指したA', true);
+    dot(t.E, '#3b82f6', 6, '止めた位置');
+  }
+}
+
+syncPanel(); renderHeat(); resize(); render();
 })();
 </script>
 </body>

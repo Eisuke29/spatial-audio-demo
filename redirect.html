@@ -5,54 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>聴覚リダイレクション デモ</title>
 <style>
-:root{--bg:#f3f4f7;--card:#fff;--ink:#16181d;--muted:#6b7280;--line:#e5e7eb;--accent:#4f46e5;--p:#10b981;--snd:#a855f7;
+:root{--bg:#f3f4f7;--card:#fff;--ink:#16181d;--muted:#6b7280;--line:#e5e7eb;--accent:#4f46e5;--p:#10b981;
   font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;overflow:hidden}
 body{background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;display:flex;flex-direction:column}
 [hidden]{display:none!important}
-header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line);flex:none}
+header{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--card);border-bottom:1px solid var(--line);flex:none}
 header h1{font-size:15px;margin:0 8px 0 0}
 .sp{flex:1}
 .muted{color:var(--muted);font-size:12px}
-.btn{border:0;border-radius:8px;padding:6px 11px;font:inherit;font-weight:700;cursor:pointer;background:#eef2ff;color:var(--accent)}
+.btn{border:0;border-radius:8px;padding:5px 10px;font:inherit;font-weight:700;cursor:pointer;background:#eef2ff;color:var(--accent)}
 .btn.pri{background:var(--accent);color:#fff}
 .seg{display:flex;background:#f1f5f9;border-radius:9px;padding:2px;gap:2px}
-.seg button{border:0;background:transparent;border-radius:7px;padding:5px 10px;font:inherit;cursor:pointer;color:var(--muted)}
+.seg button{border:0;background:transparent;border-radius:7px;padding:4px 10px;font:inherit;cursor:pointer;color:var(--muted)}
 .seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 2px #0002}
-.app{flex:1;min-height:0;display:grid;grid-template-columns:290px 1fr;gap:12px;padding:12px}
-.side{display:flex;flex-direction:column;gap:10px;min-height:0}
-.side.off{opacity:.4;pointer-events:none}
-.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 1px 2px #0000000d}
+.app{flex:1;min-height:0;display:grid;grid-template-columns:240px 1fr 330px;gap:10px;padding:10px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0}
+.col.off{opacity:.4;pointer-events:none}
+.card{background:var(--card);border-radius:12px;padding:10px;box-shadow:0 1px 2px #0000000d}
 .lbl{font-size:12px;font-weight:700;margin:0 0 6px}
-table.ctab{width:100%;border-collapse:separate;border-spacing:3px;font-size:12px}
+table.ctab{width:100%;border-collapse:separate;border-spacing:3px}
 .ctab th{font-weight:600;color:var(--muted);text-align:left;font-size:11px}
 .ctab thead th{text-align:center}
 .ctab td{padding:0}
-.ctab button{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:6px 0;font:inherit;font-size:15px;cursor:pointer}
+.ctab button{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:5px 0;font:inherit;font-size:15px;cursor:pointer}
 .ctab button[aria-pressed=true]{border-color:var(--accent);background:#eef2ff;color:#3730a3;font-weight:700}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
-.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:2px 10px;font:inherit;cursor:pointer}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:2px 9px;font:inherit;cursor:pointer}
 .chip[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .prog{height:6px;background:#eef2ff;border-radius:99px;overflow:hidden;margin:6px 0 2px}
 .prog i{display:block;height:100%;background:var(--accent);width:0}
-.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:6px}
 .stage{position:relative;padding:0;overflow:hidden;min-height:0;display:flex;flex-direction:column}
-.steps{display:flex;gap:5px;padding:8px 12px;border-bottom:1px solid var(--line);align-items:center;flex:none}
-.steps span{font-size:12px;padding:3px 10px;border-radius:99px;background:#f1f5f9;color:#9ca3af}
+.steps{display:flex;gap:5px;padding:7px 10px;border-bottom:1px solid var(--line);align-items:center;flex:none}
+.steps span{font-size:12px;padding:2px 9px;border-radius:99px;background:#f1f5f9;color:#9ca3af}
 .steps span.now{background:var(--accent);color:#fff;font-weight:700}
 .steps .info{margin-left:auto;background:none;color:var(--muted);padding:0}
-canvas{display:block;width:100%;flex:1;min-height:0;background:#fff;cursor:pointer}
-.banner{position:absolute;left:0;right:0;top:40px;bottom:0;display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px;pointer-events:none;text-align:center}
-.banner big{font-size:clamp(18px,2.2vw,26px);font-weight:800;background:#ffffffe6;padding:0 12px;border-radius:10px}
+#map{display:block;width:100%;flex:1;min-height:0;background:#fff}
+.banner{position:absolute;left:0;right:0;top:36px;bottom:0;display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:2px;pointer-events:none;text-align:center}
+.banner big{font-size:clamp(18px,2.1vw,25px);font-weight:800;background:#ffffffe6;padding:0 12px;border-radius:10px}
 .banner small{font-size:13px;color:var(--muted);background:#ffffffe6;padding:0 10px;border-radius:8px}
 .banner.dark{background:#0b0d12;justify-content:center;padding-top:0}
 .banner.dark big{background:none;color:#e5e7eb}.banner.dark small{background:none;color:#9ca3af}
-.res{position:absolute;left:12px;bottom:12px;background:#fffffff2;border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 4px 16px #0001;max-width:360px}
-.res .big{font-size:30px;font-weight:800;line-height:1.1}
+.res{position:absolute;left:10px;bottom:10px;background:#fffffff2;border:1px solid var(--line);border-radius:12px;padding:8px 12px;box-shadow:0 4px 16px #0001;max-width:340px}
+.res .big{font-size:28px;font-weight:800;line-height:1.1}
 .res .big small{font-size:12px;color:var(--muted);font-weight:600;margin-left:6px}
 .res p{margin:4px 0 0}
-dialog{border:0;border-radius:14px;padding:18px;max-width:min(900px,95vw);box-shadow:0 20px 60px #0003}
+#cam{display:block;width:100%;background:#111;border-radius:8px;cursor:crosshair}
+.setup{list-style:none;padding:0;margin:6px 0 0;display:flex;flex-direction:column;gap:3px}
+.setup li{display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 6px;border-radius:7px;color:var(--muted)}
+.setup li.now{background:#eef2ff;color:#3730a3;font-weight:700}
+.setup li.ok{color:#166534}
+.setup li .redo{margin-left:auto;border:0;background:none;color:var(--accent);cursor:pointer;font:inherit;font-size:11px}
+select{font:inherit;font-size:12px;max-width:100%}
+dialog{border:0;border-radius:14px;padding:16px;max-width:min(900px,95vw);box-shadow:0 20px 60px #0003}
 dialog::backdrop{background:#0006}
 table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
 .heat th{font-weight:600;color:var(--muted);text-align:center;padding:2px 6px}
@@ -67,22 +74,22 @@ table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
   <h1>🎧 聴覚リダイレクション</h1>
   <div class="seg" id="mode"><button data-v="auto">自動</button><button data-v="manual">手動</button></div>
   <span class="sp"></span>
-  <span class="muted" id="warn"></span>
+  <button class="btn" id="pause">⏸ 一時停止</button>
   <button class="btn" id="tl">◀ 左</button><button class="btn" id="tr">右 ▶</button>
-  <input type="range" id="vol" min="0" max="1" step="0.01" value="0.6" style="width:80px" title="音量">
+  <input type="range" id="vol" min="0" max="1" step="0.01" value="0.6" style="width:70px" title="音量">
   <button class="btn" id="sumBtn">まとめ</button>
-  <button class="btn" id="redo">覚え直す</button>
+  <button class="btn" id="relearn">覚え直す</button>
 </header>
 
 <div class="app">
-  <aside class="side" id="side">
+  <aside class="col" id="left">
     <div class="card">
       <div class="lbl" id="condLbl">音の条件</div>
       <table class="ctab">
         <thead><tr><th></th><th>鳴りっぱなし</th><th>バックセンサー</th></tr></thead>
         <tbody id="ctab"></tbody>
       </table>
-      <div class="muted" id="condName" style="margin-top:4px;min-height:1.5em"></div>
+      <div class="muted" id="condName" style="min-height:1.5em"></div>
     </div>
     <div class="card">
       <div class="lbl" id="angLbl">道具の間隔</div>
@@ -90,7 +97,7 @@ table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
     </div>
     <div class="card" id="manualBox">
       <div class="lbl">取る道具</div>
-      <div class="seg" id="toolSeg"><button data-v="A">赤 左</button><button data-v="M">青 中</button><button data-v="B">黄 右</button><button data-v="rand">🎲</button></div>
+      <div class="seg" id="toolSeg"><button data-v="A">赤 前</button><button data-v="M">青</button><button data-v="B">黄 後</button><button data-v="rand">🎲</button></div>
     </div>
     <div class="card" id="autoBox">
       <div class="row"><span class="lbl" style="margin:0">進み具合</span><button class="btn" id="restart">最初から</button></div>
@@ -100,35 +107,48 @@ table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
   </aside>
 
   <section class="card stage">
-    <div class="steps" id="steps"><span>位置合わせ</span><span>覚える</span><span>声</span><span>伸ばす</span><span>答える</span><span class="info" id="trialInfo"></span></div>
-    <canvas id="cv"></canvas>
+    <div class="steps" id="steps"><span>覚える</span><span>声</span><span>伸ばす</span><span>答える</span><span class="info" id="trialInfo"></span></div>
+    <canvas id="map"></canvas>
     <div class="banner" id="banner"><big id="bBig"></big><small id="bSmall"></small></div>
     <div class="res" id="res" hidden>
       <div class="big" id="rBig"></div>
       <p id="rTxt"></p>
-      <div id="finalBox" hidden style="margin-top:8px"><b>本物はいくつあった？</b>
+      <div id="finalBox" hidden style="margin-top:6px"><b>本物はいくつあった？</b>
         <button class="btn" data-real="1">1</button><button class="btn" data-real="2">2</button><button class="btn" data-real="3">3</button> <span class="muted" id="realAns"></span></div>
     </div>
   </section>
+
+  <aside class="col">
+    <div class="card">
+      <div class="row" style="margin-bottom:6px"><span class="lbl" style="margin:0">カメラ（机の真上から）</span><button class="btn" id="camStart">カメラを使う</button></div>
+      <select id="camSel" hidden></select>
+      <canvas id="cam" width="640" height="480"></canvas>
+      <div class="row" style="margin-top:6px"><span class="muted">色の幅</span><input type="range" id="tol" min="6" max="40" value="16" style="width:120px"><span class="muted" id="trackSt"></span></div>
+      <ol class="setup" id="setup"></ol>
+    </div>
+  </aside>
 </div>
 
 <dialog id="sumDlg">
   <div class="row" style="margin-bottom:8px"><b>まとめ（本物Pへ引っぱられた割合）</b><span><button class="btn" id="clearAll">消す</button> <button class="btn pri" id="sumClose">閉じる</button></span></div>
   <table class="heat" id="heat"></table>
-  <p class="muted" style="margin:8px 0 0">0%＝覚えた道具の場所、100%＝本物P。小さい数字＝「ずれていた」／回答数。青（本物と同じ場所）は、本物からの距離（スタート→本物＝100）。途中で止めた回は入れない。</p>
+  <p class="muted" style="margin:8px 0 0">0%＝覚えた道具の場所、100%＝本物P。小さい数字＝「ずれていた」／回答数。青（本物と同じ場所）は本物からのずれ（cm）。</p>
 </dialog>
 
 <script>
 (() => {
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 };
 
 // ===== 道具と条件 =====
-const TOOLS = { A: { name: '赤', side: -1, color: '#ef4444', pos: '左' }, M: { name: '青', side: 0, color: '#2563eb', pos: '真ん中' }, B: { name: '黄', side: 1, color: '#d97706', pos: '右' } };
+// 机の座標（cm）：A4の紙の手前左の角が原点、x＝右、y＝奥（前）。紙は机の手前のふちと平行に置く。
+// 道具：頭を中心に、本物Pと同じ距離の弧の上。A（赤）＝Pより前、M（青）＝P、B（黄）＝Pより後ろ。
+const TOOLS = { A: { name: '赤', side: -1, color: '#ef4444', pos: '前' }, M: { name: '青', side: 0, color: '#2563eb', pos: '本物の位置' }, B: { name: '黄', side: 1, color: '#d97706', pos: '後ろ' } };
 const CONDS = [
   { id: 'none', loc: null, type: null, name: '音なし', mark: '−' },
   { id: 'T-c', loc: 'T', type: 'c', name: '道具の場所 × 鳴りっぱなし', mark: '○' },
@@ -140,13 +160,15 @@ const CONDS = [
 ];
 const CMAP = Object.fromEntries(CONDS.map(c => [c.id, c]));
 const ANGLES = [5, 10, 15, 20, 30, 40];
-const ARM_CM = 45; // 音の距離感用：スタート→Pを約45cmとみなす
+const PAPER = { w: 29.7, h: 21.0 };          // A4 横置き
+const HEAD_BEHIND = 15, EAR_ABOVE = 35;       // 頭は「体の真ん中」の15cm後ろ・机から35cm上と仮定
 
-let set = Object.assign({ mode: 'auto', conds: CONDS.map(c => c.id), angles: [10, 20, 30], mCond: 'W-c', mAng: 20, mTool: 'rand' }, store.get('ar4.set', {}));
-let learned = store.get('ar4.learned', null);
-let plan = store.get('ar4.plan', null);
-let history = store.get('ar4.history', []);
-function save() { store.set('ar4.set', set); store.set('ar4.learned', learned); store.set('ar4.plan', plan); store.set('ar4.history', history); }
+let set = Object.assign({ mode: 'auto', conds: CONDS.map(c => c.id), angles: [10, 20, 30], mCond: 'W-c', mAng: 20, mTool: 'rand' }, store.get('cam1.set', {}));
+let su = Object.assign({ cam: null, corners: [], color: null, tol: 16, body: null, S: null, P: null }, store.get('cam1.setup', {}));
+let learned = store.get('cam1.learned', null);
+let plan = store.get('cam1.plan', null);
+let history = store.get('cam1.history', []);
+function save() { store.set('cam1.set', set); store.set('cam1.setup', su); store.set('cam1.learned', learned); store.set('cam1.plan', plan); store.set('cam1.history', history); }
 
 // ===== 左パネル =====
 const ctab = $('ctab');
@@ -159,34 +181,30 @@ ctab.insertAdjacentHTML('beforeend', `<tr><th>音なし</th><td colspan="2"><but
 ctab.querySelectorAll('button').forEach(b => {
   b.onmouseenter = () => { $('condName').textContent = CMAP[b.dataset.c].name; };
   b.onmouseleave = () => { $('condName').textContent = ''; };
-  b.onclick = () => {
-    if (busy()) return; const id = b.dataset.c;
+  b.onclick = () => { if (busy()) return; const id = b.dataset.c;
     if (set.mode === 'manual') set.mCond = id;
     else { const s = new Set(set.conds); s.has(id) ? s.delete(id) : s.add(id); if (!s.size) return; set.conds = CONDS.map(c => c.id).filter(x => s.has(x)); plan = null; }
-    save(); sync(); render();
-  };
+    save(); sync(); };
 });
 ANGLES.forEach(a => { const b = document.createElement('button'); b.className = 'chip'; b.dataset.a = a; b.textContent = a + '°';
   b.onclick = () => { if (busy()) return;
     if (set.mode === 'manual') set.mAng = a;
     else { const s = new Set(set.angles); s.has(a) ? s.delete(a) : s.add(a); if (!s.size) return; set.angles = ANGLES.filter(x => s.has(x)); plan = null; }
-    save(); sync(); render(); };
+    save(); sync(); };
   $('angChips').appendChild(b); });
-$('mode').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mode = b.dataset.v; save(); sync(); render(); });
-$('toolSeg').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mTool = b.dataset.v; save(); sync(); render(); });
-$('restart').onclick = () => { if (busy()) return; plan = null; save(); sync(); render(); };
-$('redo').onclick = () => { if (busy()) return; learned = null; save(); render(); };
+$('mode').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mode = b.dataset.v; save(); sync(); });
+$('toolSeg').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mTool = b.dataset.v; save(); sync(); });
+$('restart').onclick = () => { if (busy()) return; plan = null; save(); sync(); };
+$('relearn').onclick = () => { if (busy()) return; learned = null; save(); };
 $('vol').oninput = () => { if (master) master.gain.value = Number($('vol').value); };
 $('sumBtn').onclick = () => { renderHeat(); $('sumDlg').showModal(); };
 $('sumClose').onclick = () => $('sumDlg').close();
 $('clearAll').onclick = () => { if (confirm('結果を消しますか？')) { history = []; save(); renderHeat(); } };
-document.querySelectorAll('[data-real]').forEach(b => b.onclick = () => { if (plan) { plan.real = Number(b.dataset.real); save(); $('realAns').textContent = `→ 本当は1つ`; } });
+$('pause').onclick = () => { paused = !paused; $('pause').textContent = paused ? '▶ 再開' : '⏸ 一時停止'; };
+document.querySelectorAll('[data-real]').forEach(b => b.onclick = () => { if (plan) { plan.real = Number(b.dataset.real); save(); $('realAns').textContent = '→ 本当は1つ'; } });
 
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function makePlan() {
-  const blocks = shuffle([...set.angles]).map(ang => ({ ang, trials: shuffle(set.conds.flatMap(cond => ['A', 'M', 'B'].map(tool => ({ cond, tool })))) }));
-  return { blocks, b: 0, i: 0, real: null };
-}
+function makePlan() { return { blocks: shuffle([...set.angles]).map(ang => ({ ang, trials: shuffle(set.conds.flatMap(cond => ['A', 'M', 'B'].map(tool => ({ cond, tool })))) })), b: 0, i: 0, real: null }; }
 const planDone = () => plan && plan.b >= plan.blocks.length;
 function planCount() { let d = 0, n = 0; plan.blocks.forEach((bl, k) => { n += bl.trials.length; if (k < plan.b) d += bl.trials.length; else if (k === plan.b) d += plan.i; }); return [d, n]; }
 function nextSpec() {
@@ -206,7 +224,7 @@ function sync() {
   $('toolSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === set.mTool)));
   if (auto && !plan) { plan = makePlan(); save(); }
   if (plan) { const [d, n] = planCount(); $('progBar').style.width = (d / n * 100) + '%'; $('progTxt').textContent = planDone() ? `${n}回 終了` : `${d} / ${n}回（間隔 ${plan.blocks[plan.b].ang}°）`; }
-  $('side').classList.toggle('off', busy());
+  $('left').classList.toggle('off', busy());
 }
 
 // ===== 音 =====
@@ -223,9 +241,10 @@ function ensureAudio() {
   burst = ac.createBuffer(1, n, sr); const d = burst.getChannelData(0);
   for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.min(1, i / f, (n - 1 - i) / f) * 0.5;
 }
-const HEAD_BEHIND = 20, EAR_ABOVE = 30; // 耳はスタート印の20cm後ろ・30cm上と仮定（cm）
-function setSource(p) { // p は「スタート→P = 1」の単位
-  const x = p.x * ARM_CM / 100, y = -EAR_ABOVE / 100, z = -(p.y * ARM_CM + HEAD_BEHIND) / 100, t = ac.currentTime;
+document.addEventListener('pointerdown', ensureAudio, { once: true });
+const head = () => ({ x: su.body.x, y: su.body.y - HEAD_BEHIND });
+function setSource(p) { // 机の点 p（cm）→ 頭から見た位置（m）。頭は正面（机の奥）を向いている
+  const h = head(), x = (p.x - h.x) / 100, y = -EAR_ABOVE / 100, z = -(p.y - h.y) / 100, t = ac.currentTime;
   if (panner.positionX) { panner.positionX.setTargetAtTime(x, t, 0.01); panner.positionY.setTargetAtTime(y, t, 0.01); panner.positionZ.setTargetAtTime(z, t, 0.01); }
   else panner.setPosition(x, y, z);
 }
@@ -239,7 +258,7 @@ function speak(text, done) {
   try { const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 1.1;
     const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('ja')); if (v) u.voice = v;
     u.onend = go; u.onerror = go; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch {}
-  later(go, 2500);
+  setTimeout(go, 2500);
 }
 let schedTimer = null, nextT = 0;
 function startLoop() {
@@ -250,222 +269,320 @@ function startLoop() {
   tick();
 }
 function stopLoop() { clearTimeout(schedTimer); schedTimer = null; }
-// 鳴る場所：取る道具T・本物P・ワーピング（手の進み具合でT→P）
+// 手の進み具合：スタートS→本物P の線上で、どこまで来たか（S=0、P=1）
+const progress = h => { const dx = su.P.x - su.S.x, dy = su.P.y - su.S.y; return ((h.x - su.S.x) * dx + (h.y - su.S.y) * dy) / (dx * dx + dy * dy); };
 function srcPos() {
   const c = CMAP[trial.cond], { T, P } = trial;
   if (c.loc === 'T') return T;
   if (c.loc === 'P') return P;
-  if (c.loc === 'W') { const q = clamp(hand.y, 0, 1), s = q * q * (3 - 2 * q); return { x: T.x + (P.x - T.x) * s, y: T.y + (P.y - T.y) * s }; }
+  if (c.loc === 'W') { const q = clamp(progress(hand), 0, 1), s = q * q * (3 - 2 * q); return { x: T.x + (P.x - T.x) * s, y: T.y + (P.y - T.y) * s }; }
   return null;
 }
-// 鳴り方：鳴りっぱなし（一定）・バックセンサー（鳴る場所に近いほど速く大きく）
 function soundNow() {
   if (!trial || state !== 'reach') return null;
   const c = CMAP[trial.cond]; if (!c.loc) return null;
   const pos = srcPos();
   if (c.type === 'c') return { pos, interval: 0.35, gain: 0.8 };
-  const k = clamp(1 - Math.hypot(hand.x - pos.x, hand.y - pos.y) / 0.7, 0, 1);
+  const k = clamp(1 - dist(hand, pos) / 30, 0, 1); // 30cm以内で変化
   return { pos, interval: 0.6 - 0.5 * k, gain: 0.3 + 0.7 * k };
 }
 
-// ===== 状態とマウス =====
-// 座標：毎回はかる「スタートS → 本物P」を基準にする。
-//   y = Pへ向かう方向（Sで0、Pで1）、x = それに直角な右方向（同じ物差し）。
-//   マウスの向きが少し回っていても、Pの方向を「前」とみなすので、ずれない。
-// 1回の流れ（固定中）：calP（本物に触れてクリック）→ calS（スタートに戻してクリック）
-//   → [覚える：learnGo ⇄ learnBack → calP に戻る] → instruct（声）→ reach → answer
-const cv = $('cv'), ctx = cv.getContext('2d');
-let state = 'idle', trial = null, last = null, timers = [], note = '';
-let raw = { x: 0, y: 0 }, rawP = null, frame = null, hand = { x: 0, y: 0 };
-let learnSeq = [], learnK = 0, learnAng = null, accel = false;
-const LOCKED = ['calP', 'calS', 'learnGo', 'learnBack', 'instruct', 'reach', 'answer'];
-const busy = () => LOCKED.includes(state);
-const locked = () => document.pointerLockElement === cv;
-const P0 = { x: 0, y: 1 };
-const rot = (p, d) => { const r = d * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return { x: p.x * c + p.y * s, y: -p.x * s + p.y * c }; };
-const geom = ang => ({ P: P0, A: rot(P0, -ang), M: { ...P0 }, B: rot(P0, ang) }); // 道具はSから同じ距離の弧の上。Pから左右に ang°
-const touchR = ang => Math.min(0.08, 0.9 * Math.sin(ang * Math.PI / 360));
-// マウスの生の位置 → S・P基準の座標
-function toFrame(r) {
-  const dx = r.x - frame.S.x, dy = r.y - frame.S.y;
-  return { x: (dx * frame.v.x + dy * frame.v.y) / frame.len, y: (dx * frame.u.x + dy * frame.u.y) / frame.len };
+// ===== カメラと手の追跡 =====
+// 手（指先か手の甲）に、はっきりした色のシールを貼る。その色の重心を追う。
+// 紙の4隅のクリックから、画像の点 → 机のcm への変換（射影変換）を作る。
+const camCv = $('cam'), cctx = camCv.getContext('2d', { willReadFrequently: true });
+const video = document.createElement('video'); video.muted = true; video.playsInline = true;
+const proc = document.createElement('canvas'), pctx = proc.getContext('2d', { willReadFrequently: true });
+let stream = null, Hm = null, Hinv = null, marker = null, hand = null, lost = 0;
+async function startCam(id) {
+  try {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({ video: id ? { deviceId: { exact: id }, width: { ideal: 1280 }, height: { ideal: 720 } } : { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    video.srcObject = stream; await video.play();
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    const cur = stream.getVideoTracks()[0].getSettings().deviceId;
+    $('camSel').innerHTML = devs.map((d, i) => `<option value="${d.deviceId}" ${d.deviceId === cur ? 'selected' : ''}>${d.label || 'カメラ ' + (i + 1)}</option>`).join('');
+    $('camSel').hidden = devs.length < 2; $('camStart').hidden = true;
+    su.cam = cur; save();
+    const ar = video.videoHeight / video.videoWidth; camCv.width = 640; camCv.height = Math.round(640 * ar);
+    proc.width = 240; proc.height = Math.round(240 * ar);
+  } catch (e) { $('trackSt').textContent = 'カメラを開けません：' + e.message; }
 }
-function makeFrame(S, P) {
-  const vx = P.x - S.x, vy = P.y - S.y, len = Math.hypot(vx, vy), u = { x: vx / len, y: vy / len };
-  return { S, len, u, v: { x: u.y, y: -u.x } }; // v = u を右に90°回したもの
+$('camStart').onclick = () => startCam(su.cam);
+$('camSel').onchange = () => { su.corners = []; Hm = null; startCam($('camSel').value); save(); };
+$('tol').value = su.tol; $('tol').oninput = () => { su.tol = Number($('tol').value); save(); };
+
+function solveH(src, dst) { // 4点の対応から射影変換（3×3）を作る
+  const A = [], b = [];
+  for (let i = 0; i < 4; i++) { const { x, y } = src[i], { x: u, y: v } = dst[i];
+    A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); b.push(u); A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); b.push(v); }
+  for (let c = 0; c < 8; c++) { let p = c; for (let r = c + 1; r < 8; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; [b[c], b[p]] = [b[p], b[c]];
+    for (let r = 0; r < 8; r++) if (r !== c) { const f = A[r][c] / A[c][c]; for (let k = c; k < 8; k++) A[r][k] -= f * A[c][k]; b[r] -= f * b[c]; } }
+  const h = b.map((v, i) => v / A[i][i]); return [h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1];
 }
-function clearTimers() { timers.forEach(clearTimeout); timers = []; }
-function later(f, ms) { timers.push(setTimeout(f, ms)); }
-function lock() { ensureAudio();
-  try { const r = cv.requestPointerLock({ unadjustedMovement: true });
-    if (r && r.catch) r.catch(() => { accel = true; try { cv.requestPointerLock(); } catch {} }); }
-  catch { accel = true; cv.requestPointerLock(); } }
-function unlock() { if (document.pointerLockElement) document.exitPointerLock(); }
-
-let lockedAt = 0;
-document.addEventListener('pointerlockerror', () => { note = '固定できませんでした。1秒待ってもう一度クリック'; render(); });
-document.addEventListener('pointerlockchange', () => {
-  if (locked()) {
-    lockedAt = performance.now(); raw = { x: 0, y: 0 }; rawP = null; frame = null;
-    $('warn').textContent = accel ? '⚠ マウス加速が切れていません（距離がずれます）' : '';
-    const sp = nextSpec(); if (!sp) { unlock(); return; }
-    learnAng = sp.ang; state = 'calP'; note = '';
-  } else if (busy()) { stopLoop(); clearTimers(); trial = null; state = 'idle'; note = ''; }
-  sync(); render();
+const applyH = (H, p) => { const w = H[6] * p.x + H[7] * p.y + H[8]; return { x: (H[0] * p.x + H[1] * p.y + H[2]) / w, y: (H[3] * p.x + H[4] * p.y + H[5]) / w }; };
+function buildH() {
+  if (su.corners.length !== 4) { Hm = Hinv = null; return; }
+  const dst = [{ x: 0, y: 0 }, { x: PAPER.w, y: 0 }, { x: PAPER.w, y: PAPER.h }, { x: 0, y: PAPER.h }]; // 手前左・手前右・奥右・奥左
+  Hm = solveH(su.corners, dst); Hinv = solveH(dst, su.corners);
+}
+function rgb2hsv(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0; if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+  return { h, s: mx ? d / mx : 0, v: mx }; }
+function findMarker() {
+  const W = proc.width, H = proc.height; pctx.drawImage(video, 0, 0, W, H);
+  const d = pctx.getImageData(0, 0, W, H).data, c = su.color, tol = su.tol, smin = Math.max(0.25, c.s * 0.5), vmin = Math.max(0.2, c.v * 0.4);
+  const pts = [];
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = (y * W + x) * 4, q = rgb2hsv(d[i], d[i + 1], d[i + 2]);
+    if (q.s < smin || q.v < vmin) continue; let dh = Math.abs(q.h - c.h); if (dh > 180) dh = 360 - dh; if (dh <= tol) pts.push(x, y); }
+  if (pts.length < 16) return null;
+  let sx = 0, sy = 0, n = pts.length / 2; for (let i = 0; i < pts.length; i += 2) { sx += pts[i]; sy += pts[i + 1]; }
+  let cx = sx / n, cy = sy / n, R = 0.08 * W; sx = sy = 0; let m = 0;            // 外れた点を除いてもう一度
+  for (let i = 0; i < pts.length; i += 2) if (Math.hypot(pts[i] - cx, pts[i + 1] - cy) < R) { sx += pts[i]; sy += pts[i + 1]; m++; }
+  if (m < 10) return null;
+  return { x: sx / m / W, y: sy / m / H, n: m };                                 // 画像の割合（0〜1）
+}
+camCv.addEventListener('click', e => {
+  const r = camCv.getBoundingClientRect(), p = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+  const st = setupStep();
+  if (st === 'corners') { su.corners.push(p); buildH(); save(); }
+  else if (st === 'color') { const x = Math.round(p.x * camCv.width), y = Math.round(p.y * camCv.height), d = cctx.getImageData(x - 2, y - 2, 5, 5).data;
+    let r0 = 0, g0 = 0, b0 = 0; for (let i = 0; i < d.length; i += 4) { r0 += d[i]; g0 += d[i + 1]; b0 += d[i + 2]; }
+    su.color = rgb2hsv(r0 / 25, g0 / 25, b0 / 25); save(); }
+  else if (st === 'body' && Hm) { su.body = applyH(Hm, p); save(); }
+  renderSetup();
 });
-cv.addEventListener('click', () => { if (!locked() && !busy() && state !== 'done') lock(); });
-cv.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('contextmenu', e => { if (locked()) e.preventDefault(); });
 
-document.addEventListener('mousemove', e => {
-  if (!locked()) return;
-  raw.x += e.movementX; raw.y -= e.movementY;
-  if (!frame) { draw(); return; }
-  hand = toFrame(raw);
-  if (state === 'learnGo') { const id = learnSeq[learnK], p = geom(learnAng)[id];
-    if (Math.hypot(hand.x - p.x, hand.y - p.y) < touchR(learnAng)) { setSource(p); for (let i = 0; i < 2; i++) pulse(ac.currentTime + i * 0.18, 0.8, panner); state = 'learnBack'; render(); return; } }
-  else if (state === 'learnBack' && Math.hypot(hand.x, hand.y) < 0.08) {
-    learnK++; if (learnK < learnSeq.length) { state = 'learnGo'; render(); return; }
-    learned = learnAng; save(); frame = null; rawP = null; state = 'calP'; note = '覚えました'; render(); return; }
-  else if (state === 'reach') { trial.path.push({ ...hand }); const s = srcPos(); if (s) trial.src.push({ ...s }); return; }
-  draw();
-});
-document.addEventListener('mousedown', e => {
-  if (!locked() || performance.now() - lockedAt < 200) return;
-  if (e.button === 2 && ['calP', 'calS', 'learnGo', 'learnBack'].includes(state)) { state = 'idle'; unlock(); return; }
-  if (e.button === 0 && state === 'calP') { rawP = { ...raw }; state = 'calS'; note = ''; render(); return; }
-  if (e.button === 0 && state === 'calS') {
-    const d = Math.hypot(rawP.x - raw.x, rawP.y - raw.y);
-    if (d < 50) { note = '本物とスタートが近すぎます。本物に触れるところからやり直し'; state = 'calP'; render(); return; }
-    frame = makeFrame({ ...raw }, rawP); hand = { x: 0, y: 0 }; store.set('ar5.len', d);
-    if (learned !== learnAng) { learnSeq = ['A', 'M', 'B', 'A', 'M', 'B']; learnK = 0; state = 'learnGo'; render(); return; }
-    startTrial(); return;
+// ===== 準備の手順 =====
+const SETUP = [
+  ['camera', 'カメラを使う（机の真上から、手前のふちまで映す）'],
+  ['corners', 'A4の紙を横向きに置き、4隅をクリック（手前左→手前右→奥右→奥左）'],
+  ['color', '手のシールの色をクリック'],
+  ['body', '自分の体の真ん中（机の手前のふち）をクリック'],
+  ['S', 'スタート位置に手を置いて止める'],
+  ['P', '真右の本物に手を置いて止める'],
+];
+const DEBUG = location.hash === '#debug'; let dbgHand = null;
+if (DEBUG) window.__dbg = { setHand: p => { dbgHand = p; }, su: () => su, setSu: o => { Object.assign(su, o); buildH(); save(); }, state: () => state, last: () => last, geom: a => geom(a), hand: () => hand, marker: () => marker };
+function setupStep() {
+  if (!stream && !DEBUG) return 'camera';
+  if (su.corners.length < 4) return 'corners';
+  if (!su.color) return 'color';
+  if (!su.body) return 'body';
+  if (!su.S) return 'S';
+  if (!su.P) return 'P';
+  return null;
+}
+function renderSetup() {
+  const cur = setupStep(), order = SETUP.map(s => s[0]);
+  $('setup').innerHTML = SETUP.map(([k, t]) => { const done = cur === null || order.indexOf(k) < order.indexOf(cur);
+    return `<li class="${k === cur ? 'now' : done ? 'ok' : ''}">${done ? '✓' : k === cur ? '▶' : '・'} ${t}${done && k !== 'camera' ? `<button class="redo" data-redo="${k}">やり直す</button>` : ''}</li>`; }).join('');
+  $('setup').querySelectorAll('[data-redo]').forEach(b => b.onclick = () => { if (busy()) return; const k = b.dataset.redo;
+    if (k === 'corners') { su.corners = []; buildH(); } else if (k === 'color') su.color = null; else if (k === 'body') su.body = null; else su[k] = null;
+    if (k === 'corners' || k === 'body') { su.S = null; su.P = null; }
+    learned = null; save(); renderSetup(); });
+}
+
+// ===== 1回の流れ（手の動きだけで進む） =====
+// 待機：手がスタートで止まる → [覚える：赤→青→黄 ×2] → 声「○を取って」→ 伸ばす → 止まる → 答える（左クリック＝はい／右クリック＝いいえ）
+let state = 'idle', trial = null, last = null, learnSeq = [], learnK = 0, learnAng = null, paused = false, resultAt = 0, leftStart = true;
+const busy = () => ['learnGo', 'learnBack', 'instruct', 'reach', 'answer'].includes(state);
+const trailBuf = []; // 直近の手の位置（止まっているかの判定用）
+let stillSince = null;
+function updateStill(t) {
+  trailBuf.push({ ...hand, t }); while (trailBuf.length && t - trailBuf[0].t > 400) trailBuf.shift();
+  const moving = trailBuf.some(p => dist(p, hand) > 1.0); // 0.4秒で1cm以上動いたら「動いている」
+  if (moving) stillSince = null; else if (stillSince === null) stillSince = t;
+}
+const stillFor = t => stillSince === null ? 0 : t - stillSince;
+function geom(ang) { // 頭を中心に、本物Pと同じ距離の弧の上に並べる
+  const h = head(), R = dist(su.P, h), azP = Math.atan2(su.P.x - h.x, su.P.y - h.y), out = { P: su.P };
+  for (const id of ['A', 'M', 'B']) { const az = azP + TOOLS[id].side * ang * Math.PI / 180; out[id] = { x: h.x + R * Math.sin(az), y: h.y + R * Math.cos(az) }; }
+  return out;
+}
+const TOUCH = 3; // 覚えるときに「触れた」とみなす半径（cm）
+function tick(t) {
+  const st = setupStep();
+  if (st === 'S' || st === 'P') {
+    if (hand && stillFor(t) > 1000) { if (st === 'S') su.S = { ...hand }; else if (dist(hand, su.S) > 15) su.P = { ...hand }; save(); renderSetup(); stillSince = null; }
+    return;
   }
-  if (state === 'reach') { endReach(); return; }
-  if (state === 'answer') { answer(e.button === 0 ? 'yes' : e.button === 2 ? 'no' : 'unsure'); return; }
-});
-document.addEventListener('keydown', e => { if (state === 'answer' && e.code === 'Digit3') answer('unsure'); });
-
-function startTrial() {
-  const sp = nextSpec(); if (!sp) return;
-  ensureAudio(); clearTimers();
-  const tool = sp.tool === 'rand' ? ['A', 'M', 'B'][Math.floor(Math.random() * 3)] : sp.tool, g = geom(sp.ang);
-  trial = { cond: sp.cond, ang: sp.ang, tool, P: g.P, T: g[tool], path: [{ ...hand }], src: [] };
-  state = 'instruct'; render();
-  later(() => speak(`${TOOLS[tool].name}を取って`, () => {
-    if (state !== 'instruct') return;
-    trial.start = { ...hand }; trial.path = [{ ...hand }]; state = 'reach'; trial.t0 = performance.now(); beep(); later(startLoop, 120); render();
-  }), 400);
+  if (st !== null || !hand) return;
+  const nearS = dist(hand, su.S) < 4;
+  if (!nearS) leftStart = true;
+  if ((state === 'idle' || state === 'result') && !paused && nearS && leftStart && stillFor(t) > 1000 && t - resultAt > 1500) {
+    const sp = nextSpec(); if (!sp) return;
+    learnAng = sp.ang; leftStart = false;
+    if (learned !== sp.ang) { learnSeq = ['A', 'M', 'B', 'A', 'M', 'B']; learnK = 0; state = 'learnGo'; ensureAudio(); render(); return; }
+    startTrial(sp); return;
+  }
+  if (state === 'learnGo') { const id = learnSeq[learnK], p = geom(learnAng)[id];
+    if (dist(hand, p) < TOUCH && stillFor(t) > 300) { setSource(p); for (let i = 0; i < 2; i++) pulse(ac.currentTime + i * 0.18, 0.8, panner); state = 'learnBack'; render(); } }
+  else if (state === 'learnBack' && nearS) { learnK++; if (learnK < learnSeq.length) state = 'learnGo'; else { learned = learnAng; save(); state = 'idle'; leftStart = true; stillSince = null; } render(); }
+  else if (state === 'reach') {
+    trial.path.push({ ...hand }); const s = srcPos(); if (s) trial.src.push({ ...s });
+    if (progress(hand) > 0.5 && stillFor(t) > 500) endReach();                 // 半分以上伸ばして0.5秒止まったら「触れた」
+  }
 }
-function endReach() { stopLoop(); clearTimers(); trial.E = { ...hand }; trial.ms = performance.now() - trial.t0; state = 'answer'; render(); }
-// 位置で計算する（角度は使わない）
-//   引っぱり = 止めた位置E を「道具T→本物P」の線に投影した割合（T=0、P=1）
-//   届いた深さ = E の前方向の成分（S=0、P=1）。0.6未満は「途中で止めた」
+function startTrial(sp) {
+  ensureAudio();
+  const tool = sp.tool === 'rand' ? ['A', 'M', 'B'][Math.floor(Math.random() * 3)] : sp.tool, g = geom(sp.ang);
+  trial = { cond: sp.cond, ang: sp.ang, tool, P: g.P, T: g[tool], path: [], src: [] };
+  state = 'instruct'; render();
+  setTimeout(() => speak(`${TOOLS[tool].name}を取って`, () => {
+    if (state !== 'instruct') return;
+    trial.path = [{ ...hand }]; state = 'reach'; trial.t0 = performance.now(); beep(); setTimeout(startLoop, 120); render();
+  }), 300);
+}
+function endReach() { stopLoop(); trial.E = { ...hand }; trial.ms = performance.now() - trial.t0; state = 'answer'; render(); }
+// 計算はすべて机の上のcm（スタート・本物・道具の位置から）
 function answer(v) {
   const t = trial; t.noticed = v;
   const dx = t.P.x - t.T.x, dy = t.P.y - t.T.y, L2 = dx * dx + dy * dy;
-  t.pull = L2 > 1e-9 ? ((t.E.x - t.T.x) * dx + (t.E.y - t.T.y) * dy) / L2 : null;
-  t.depth = t.E.y;
-  t.errT = Math.hypot(t.E.x - t.T.x, t.E.y - t.T.y);
-  t.errP = Math.hypot(t.E.x - t.P.x, t.E.y - t.P.y);
-  t.valid = t.depth >= 0.6;
-  history.push({ cond: t.cond, ang: t.ang, tool: t.tool, pull: t.pull, depth: t.depth, errT: t.errT, errP: t.errP, valid: t.valid, noticed: v, ms: Math.round(t.ms), mode: set.mode, time: Date.now() });
+  t.pull = L2 > 0.25 ? ((t.E.x - t.T.x) * dx + (t.E.y - t.T.y) * dy) / L2 : null; // 道具T=0、本物P=1
+  t.errT = dist(t.E, t.T); t.errP = dist(t.E, t.P); t.gap = Math.sqrt(L2);
+  history.push({ cond: t.cond, ang: t.ang, tool: t.tool, pull: t.pull, errT: t.errT, errP: t.errP, gap: t.gap, noticed: v, ms: Math.round(t.ms), mode: set.mode, time: Date.now() });
   if (set.mode === 'auto' && plan) { plan.i++; if (plan.i >= plan.blocks[plan.b].trials.length) { plan.b++; plan.i = 0; } }
-  last = t; trial = null; state = planDone() && set.mode === 'auto' ? 'done' : 'result';
-  save(); showResult(); unlock(); sync(); render();
+  last = t; trial = null; resultAt = performance.now(); state = planDone() && set.mode === 'auto' ? 'done' : 'result';
+  save(); showResult(); sync(); render();
 }
+const stageEl = document.querySelector('.stage');
+stageEl.addEventListener('mousedown', e => { if (state === 'answer') { e.preventDefault(); answer(e.button === 0 ? 'yes' : e.button === 2 ? 'no' : 'unsure'); } else if (state === 'reach') endReach(); });
+stageEl.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (state === 'answer') { if (e.code === 'KeyY' || e.code === 'Digit1') answer('yes'); else if (e.code === 'KeyN' || e.code === 'Digit2') answer('no'); else if (e.code === 'Digit3') answer('unsure'); }
+  else if (state === 'reach' && e.code === 'Space') { e.preventDefault(); endReach(); }
+});
 
 // ===== 結果 =====
-const pct = v => `${Math.round(v * 100)}`;
 function showResult() {
   const t = last, tl = TOOLS[t.tool], ans = { yes: 'ずれていた', no: 'ずれていない', unsure: 'わからない' }[t.noticed];
-  if (!t.valid) $('rBig').innerHTML = `途中で止めた<small>本物までの距離の ${pct(t.depth)}% で止めた（まとめに入れない）</small>`;
-  else if (t.pull === null) $('rBig').innerHTML = `本物から ${pct(t.errP)}<small>（スタート→本物 を100として）</small>`;
-  else $('rBig').innerHTML = `${pct(t.pull)}%<small>本物Pへ引っぱられた</small>`;
-  $('rTxt').innerHTML = `${tl.name}（${tl.pos}） ／ ${t.ang}° ／ ${CMAP[t.cond].name}<br>` +
-    `止めた位置：${tl.name}から ${pct(t.errT)}、本物から ${pct(t.errP)}（スタート→本物＝100）<br>答え：<b>${ans}</b>` +
-    (t.valid && t.pull !== null && t.pull >= 0.7 && t.noticed === 'no' ? '　<b style="color:var(--p)">→ 気づかず本物へ</b>' : '');
+  $('rBig').innerHTML = t.pull === null ? `${t.errP.toFixed(1)} cm<small>本物からのずれ</small>` : `${Math.round(t.pull * 100)}%<small>本物Pへ引っぱられた</small>`;
+  $('rTxt').innerHTML = `${tl.name}（${tl.pos}）／ 間隔 ${t.ang}°（本物まで ${t.gap.toFixed(1)} cm）／ ${CMAP[t.cond].name}<br>` +
+    `止めた位置：${tl.name}から ${t.errT.toFixed(1)} cm、本物から ${t.errP.toFixed(1)} cm<br>答え：<b>${ans}</b>` +
+    (t.pull !== null && t.pull >= 0.7 && t.noticed === 'no' ? '　<b style="color:var(--p)">→ 気づかず本物へ</b>' : '');
   $('res').hidden = false; $('finalBox').hidden = state !== 'done';
 }
 function renderHeat() {
-  const el = $('heat'), hv = history.filter(h => h.valid);
-  if (!hv.length) { el.innerHTML = '<tr><td class="muted">まだありません</td></tr>'; return; }
-  const angs = [...new Set(hv.map(h => h.ang))].sort((a, b) => a - b);
+  const el = $('heat');
+  if (!history.length) { el.innerHTML = '<tr><td class="muted">まだありません</td></tr>'; return; }
+  const angs = [...new Set(history.map(h => h.ang))].sort((a, b) => a - b);
   const cell = (h, isM) => {
     if (!h.length) return '<td style="background:#f8fafc;color:#cbd5e1">—</td>';
     const ans = h.filter(r => r.noticed !== 'unsure'), yes = ans.filter(r => r.noticed === 'yes').length, sub = `<span>${yes}/${ans.length}</span>`;
-    if (isM) return `<td style="background:#f1f5f9"><b>${pct(h.reduce((s, r) => s + r.errP, 0) / h.length)}</b>${sub}</td>`;
+    if (isM) return `<td style="background:#f1f5f9"><b>${(h.reduce((s, r) => s + r.errP, 0) / h.length).toFixed(1)}cm</b>${sub}</td>`;
     const m = h.reduce((s, r) => s + r.pull, 0) / h.length, k = clamp(m, 0, 1);
-    return `<td style="background:rgba(79,70,229,${0.08 + 0.8 * k});color:${k > 0.55 ? '#fff' : 'inherit'}"><b>${pct(m)}%</b>${sub}</td>`;
+    return `<td style="background:rgba(79,70,229,${0.08 + 0.8 * k});color:${k > 0.55 ? '#fff' : 'inherit'}"><b>${Math.round(m * 100)}%</b>${sub}</td>`;
   };
   el.innerHTML = '<tr><th></th>' + angs.map(a => `<th>赤・黄 ${a}°</th>`).join('') + '<th>青（本物）</th></tr>' +
-    CONDS.map(c => { const hc = hv.filter(r => r.cond === c.id);
+    CONDS.map(c => { const hc = history.filter(r => r.cond === c.id);
       return `<tr><th>${c.mark} ${c.name}</th>` + angs.map(a => cell(hc.filter(r => r.ang === a && r.tool !== 'M'), false)).join('') + cell(hc.filter(r => r.tool === 'M'), true) + '</tr>'; }).join('');
 }
 
 // ===== 表示 =====
-const STEP = { calP: 0, calS: 0, learnGo: 1, learnBack: 1, instruct: 2, reach: 3, answer: 4 };
+const STEP = { learnGo: 0, learnBack: 0, instruct: 1, reach: 2, answer: 3 };
 function specText(sp) { return sp ? `${sp.ang}° ／ ${CMAP[sp.cond].name} ／ ${sp.tool === 'rand' ? '🎲' : TOOLS[sp.tool].name}` : ''; }
 function render() {
   const i = STEP[state] ?? -1;
   $('steps').querySelectorAll('span:not(.info)').forEach((s, k) => s.className = k === i ? 'now' : '');
-  const sp = nextSpec();
-  $('trialInfo').textContent = trial ? '' : sp ? `次：${specText(sp)}` : '';
+  const sp = nextSpec(), st = setupStep();
+  $('trialInfo').textContent = trial || st ? '' : sp ? `次：${specText(sp)}` : '';
   const bn = $('banner'), B = $('bBig'), S = $('bSmall');
   bn.classList.toggle('dark', ['instruct', 'reach', 'answer'].includes(state));
   let big = '', small = '';
-  if (state === 'idle' || state === 'result') {
-    big = !sp ? '終了' : state === 'result' ? 'クリックで次へ' : 'クリックで開始';
-    small = state === 'idle' ? '机にスタート印と、その真正面に本物を置く' : '';
+  if (st) { big = '右のカメラで準備'; small = SETUP.find(s => s[0] === st)[1]; }
+  else if (state === 'idle' || state === 'result') {
+    big = paused ? '一時停止中' : !sp ? '終了' : 'スタートに手を置いて止める';
+    small = paused ? '' : !hand ? '⚠ 手のシールが見えません' : learned !== sp.ang ? `次は道具の場所を覚えます（${sp.ang}°）` : '声 → 目を閉じて手を伸ばす';
   }
   else if (state === 'done') big = '終了';
-  else if (state === 'calP') { big = '本物に触れてクリック'; small = note || '毎回、本物とスタートで位置を合わせ直します（右クリック：やめる）'; }
-  else if (state === 'calS') { big = 'スタート印に戻してクリック'; small = note || (learned !== learnAng ? `このあと道具の場所を覚えます（${learnAng}°）` : 'このあと声 → 目を閉じて手を伸ばす'); }
-  else if (state === 'learnGo') { const id = learnSeq[learnK]; big = `${TOOLS[id].name}（${TOOLS[id].pos}）に触れる`; small = `覚える ${learnK + 1} / ${learnSeq.length}`; }
+  else if (state === 'learnGo') { const id = learnSeq[learnK]; big = `${TOOLS[id].name}（${TOOLS[id].pos}）に触れる`; small = `覚える ${learnK + 1} / ${learnSeq.length}　目を開けたままでOK`; }
   else if (state === 'learnBack') { big = 'スタートへ戻す'; small = `覚える ${learnK + 1} / ${learnSeq.length}`; }
   else if (state === 'instruct') big = '目を閉じて';
-  else if (state === 'reach') { big = '手を伸ばす'; small = '触れたらクリック'; }
-  else if (state === 'answer') { big = 'ずれていた？'; small = '左クリック：はい　右クリック：いいえ'; }
+  else if (state === 'reach') { big = '手を伸ばす'; small = '触れたら止める（自動で終わる）'; }
+  else if (state === 'answer') { big = 'ずれていた？'; small = '左クリック・Y：はい　右クリック・N：いいえ'; }
   B.textContent = big; S.textContent = small; B.hidden = !big; S.hidden = !small;
   if (busy()) $('res').hidden = true;
-  $('side').classList.toggle('off', busy());
-  draw();
+  $('left').classList.toggle('off', busy());
 }
 
-function resize() { const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); cv.width = r.width * d; cv.height = r.height * d; ctx.setTransform(d, 0, 0, d, 0, 0); draw(); }
+const map = $('map'), mctx = map.getContext('2d');
+function resize() { const r = map.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2); map.width = r.width * d; map.height = r.height * d; mctx.setTransform(d, 0, 0, d, 0, 0); }
 window.addEventListener('resize', resize);
-function draw() {
-  const W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
-  ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+function drawMap() {
+  const W = map.clientWidth, H = map.clientHeight, g = mctx; if (!W) return;
+  g.clearRect(0, 0, W, H); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
   if (['instruct', 'reach', 'answer'].includes(state)) return;
-  const ox = W / 2, oy = H - 30;
-  const sc = Math.max(10, Math.min((H - 120) / 1.12, (W - 40) / 2.1)), pt = p => [ox + p.x * sc, oy - p.y * sc];
-  ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1;
-  [0.25, 0.5, 0.75, 1].forEach(r => { ctx.beginPath(); ctx.arc(ox, oy, r * sc, Math.PI, 2 * Math.PI); ctx.stroke(); });
-  dotAt(ox, oy, '#111827', 6, 'スタート');
-  const sp = nextSpec();
-  const ang = busy() ? learnAng : (state === 'result' || state === 'done') && last ? last.ang : sp ? sp.ang : set.mAng;
-  const g = geom(ang), r0 = Math.max(8, touchR(ang) * sc);
-  const learning = state === 'learnGo' || state === 'learnBack';
-  if (!learning) { const [x, y] = pt(g.P); ctx.fillStyle = '#10b981'; ctx.fillRect(x - 7, y - 7, 14, 14); ctx.font = '700 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText('本物', x, y + 22); }
-  ['A', 'M', 'B'].forEach(id => { const cur = state === 'learnGo' && learnSeq[learnK] === id, [x, y] = pt(g[id]);
-    ctx.beginPath(); ctx.arc(x, y, cur ? r0 + 4 : r0, 0, 7); if (cur) { ctx.fillStyle = TOOLS[id].color + '55'; ctx.fill(); }
-    ctx.lineWidth = 3; ctx.strokeStyle = TOOLS[id].color; ctx.stroke();
-    ctx.fillStyle = TOOLS[id].color; ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(TOOLS[id].name, x, y - r0 - 8); });
-  // マウスの位置：本物でクリックしたあとは「本物からどれだけ動いたか」を前回の物差しで表示
-  let me = null;
-  if (frame) me = hand;
-  else if (state === 'calS' && rawP) { const len = store.get('ar5.len', null); if (len) me = { x: (raw.x - rawP.x) / len, y: 1 + (raw.y - rawP.y) / len }; }
-  if (me) { const [x, y] = pt(me); dotAt(x, y, '#2563eb', 7); }
-  if ((state === 'result' || state === 'done') && last) {
-    const line = (pts, color, w, dash) => { if (pts.length < 2) return; ctx.setLineDash(dash || []); ctx.lineWidth = w; ctx.strokeStyle = color; ctx.beginPath(); pts.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); };
-    line(last.src, '#a855f7', 3, [6, 4]); line(last.path, '#111827', 2.5);
-    const [x, y] = pt(last.E); dotAt(x, y, '#111827', 6);
+  if (!Hm) { g.fillStyle = '#9ca3af'; g.font = '13px system-ui'; g.textAlign = 'center'; g.fillText('紙の4隅を合わせると、ここに上から見た机が出ます', W / 2, H / 2); return; }
+  // 表示範囲：紙・体・スタート・本物・道具が入るように
+  const pts = [{ x: 0, y: 0 }, { x: PAPER.w, y: PAPER.h }];
+  if (su.body) pts.push(su.body, head()); if (su.S) pts.push(su.S);
+  let gm = null; if (su.P && su.body) { const sp = nextSpec(); gm = geom(busy() ? learnAng : (state === 'result' || state === 'done') && last ? last.ang : sp ? sp.ang : set.mAng); pts.push(gm.A, gm.B, gm.P); }
+  if (hand) pts.push(hand);
+  const minX = Math.min(...pts.map(p => p.x)) - 8, maxX = Math.max(...pts.map(p => p.x)) + 8, minY = Math.min(...pts.map(p => p.y)) - 8, maxY = Math.max(...pts.map(p => p.y)) + 8;
+  const sc = Math.min((W - 20) / (maxX - minX), (H - 110) / (maxY - minY)), ox = (W - (maxX - minX) * sc) / 2, oy = H - 12;
+  const pt = p => [ox + (p.x - minX) * sc, oy - (p.y - minY) * sc];
+  // 10cm方眼
+  g.strokeStyle = '#f3f4f6'; g.lineWidth = 1;
+  for (let x = Math.ceil(minX / 10) * 10; x <= maxX; x += 10) { const [a] = pt({ x, y: 0 }); g.beginPath(); g.moveTo(a, 0); g.lineTo(a, H); g.stroke(); }
+  for (let y = Math.ceil(minY / 10) * 10; y <= maxY; y += 10) { const [, b] = pt({ x: 0, y }); g.beginPath(); g.moveTo(0, b); g.lineTo(W, b); g.stroke(); }
+  g.fillStyle = '#9ca3af'; g.font = '11px system-ui'; g.textAlign = 'left'; g.fillText('方眼 10cm', 6, H - 6);
+  { const [x0, y0] = pt({ x: 0, y: PAPER.h }); g.strokeStyle = '#d1d5db'; g.strokeRect(x0, y0, PAPER.w * sc, PAPER.h * sc); }
+  const dot = (p, color, r, label, below = true) => { const [x, y] = pt(p); g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = color; g.fill();
+    if (label) { g.font = '700 11px system-ui'; g.textAlign = 'center'; g.fillText(label, x, below ? y + r + 13 : y - r - 5); } };
+  if (su.body) { const h = head(); dot(h, '#9ca3af', 10, '頭'); const [x, y] = pt(h); g.strokeStyle = '#9ca3af'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y - 12); g.lineTo(x, y - 30); g.stroke(); g.fillText('正面', x, y - 34); }
+  if (su.S) dot(su.S, '#111827', 5, 'スタート');
+  if (gm) {
+    const learning = state === 'learnGo' || state === 'learnBack';
+    if (!learning) { const [x, y] = pt(gm.P); g.fillStyle = '#10b981'; g.fillRect(x - 7, y - 7, 14, 14); g.font = '700 11px system-ui'; g.textAlign = 'center'; g.fillText('本物', x, y + 22); }
+    ['A', 'M', 'B'].forEach(id => { const cur = state === 'learnGo' && learnSeq[learnK] === id, [x, y] = pt(gm[id]), r = TOUCH * sc;
+      g.beginPath(); g.arc(x, y, cur ? r + 3 : r, 0, 7); if (cur) { g.fillStyle = TOOLS[id].color + '55'; g.fill(); }
+      g.lineWidth = 3; g.strokeStyle = TOOLS[id].color; g.stroke(); g.fillStyle = TOOLS[id].color; g.font = '700 12px system-ui'; g.textAlign = 'center'; g.fillText(TOOLS[id].name, x + r + 12, y + 4); });
   }
+  if ((state === 'result' || state === 'done') && last) {
+    const line = (ps, color, w, dash) => { if (ps.length < 2) return; g.setLineDash(dash || []); g.lineWidth = w; g.strokeStyle = color; g.beginPath(); ps.forEach((p, i) => { const [x, y] = pt(p); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); g.setLineDash([]); };
+    line(last.src, '#a855f7', 3, [6, 4]); line(last.path, '#111827', 2.5); dot(last.E, '#111827', 5);
+  }
+  if (hand) dot(hand, '#2563eb', 6);
 }
-function dotAt(x, y, color, r, label) { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = color; ctx.fill(); if (label) { ctx.font = '700 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y + r + 14); } }
+function drawCam() {
+  const W = camCv.width, H = camCv.height, g = cctx;
+  if (!stream || video.readyState < 2) { g.fillStyle = '#111'; g.fillRect(0, 0, W, H); g.fillStyle = '#9ca3af'; g.font = '14px system-ui'; g.textAlign = 'center'; g.fillText('「カメラを使う」を押す', W / 2, H / 2); return; }
+  g.drawImage(video, 0, 0, W, H);
+  const P = p => [p.x * W, p.y * H];
+  g.lineWidth = 2; g.strokeStyle = '#facc15'; g.fillStyle = '#facc15';
+  if (su.corners.length) { g.beginPath(); su.corners.forEach((c, i) => { const [x, y] = P(c); i ? g.lineTo(x, y) : g.moveTo(x, y); }); if (su.corners.length === 4) g.closePath(); g.stroke();
+    su.corners.forEach((c, i) => { const [x, y] = P(c); g.beginPath(); g.arc(x, y, 5, 0, 7); g.fill(); g.font = '700 12px system-ui'; g.fillText(i + 1, x + 7, y - 7); }); }
+  if (Hinv) { // 机の上の点を、映像の上にも重ねて確認できるように
+    const mark = (p, color, label) => { const [x, y] = P(applyH(Hinv, p)); g.strokeStyle = color; g.lineWidth = 3; g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke(); g.fillStyle = color; g.font = '700 12px system-ui'; g.fillText(label, x + 10, y + 4); };
+    if (su.body) mark(su.body, '#e5e7eb', '体'); if (su.S) mark(su.S, '#e5e7eb', 'S');
+    if (su.P && su.body) { const gm = geom(busy() ? learnAng : set.mode === 'manual' ? set.mAng : (nextSpec() || { ang: 20 }).ang); ['A', 'M', 'B'].forEach(id => mark(gm[id], TOOLS[id].color, TOOLS[id].name)); mark(su.P, '#10b981', '本物'); }
+  }
+  if (marker) { const [x, y] = P(marker); g.strokeStyle = '#22d3ee'; g.lineWidth = 3; g.beginPath(); g.moveTo(x - 12, y); g.lineTo(x + 12, y); g.moveTo(x, y - 12); g.lineTo(x, y + 12); g.stroke(); }
+}
 
-sync(); resize(); render();
+let prevState = '', prevStep = undefined;
+function loop(t) {
+  if (stream && video.readyState >= 2 && su.color) {
+    const m = findMarker();
+    if (m) { marker = marker ? { x: marker.x * 0.4 + m.x * 0.6, y: marker.y * 0.4 + m.y * 0.6 } : m; lost = 0; }
+    else if (++lost > 10) marker = null;
+    hand = marker && Hm ? applyH(Hm, marker) : null;
+    $('trackSt').textContent = marker ? '● 追跡中' : '○ 見えない';
+  }
+  if (DEBUG && dbgHand) hand = { ...dbgHand };
+  if (hand) updateStill(t);
+  tick(t);
+  if (state !== prevState) { prevState = state; render(); sync(); }
+  const stp = setupStep(); if (stp !== prevStep) { prevStep = stp; renderSetup(); render(); }
+  drawCam(); drawMap();
+  requestAnimationFrame(loop);
+}
+
+buildH(); sync(); resize(); renderSetup(); render(); requestAnimationFrame(loop);
+if (su.cam) navigator.mediaDevices?.enumerateDevices().then(d => { if (d.some(x => x.kind === 'videoinput' && x.label)) startCam(su.cam); });
+setInterval(render, 500);
 })();
 </script>
 </body>

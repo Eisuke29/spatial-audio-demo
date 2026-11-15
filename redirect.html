@@ -3,74 +3,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f5f5f2">
-  <title>音で導く、見えない手｜聴覚リターゲティング</title>
-  <link rel="stylesheet" href="redirect.css">
-  <script src="redirect-core.js" defer></script>
-  <script src="redirect-audio.js" defer></script>
-  <script src="redirect.js" defer></script>
+  <meta name="theme-color" content="#f3f4f7">
+  <meta name="application-version" content="2.1.0">
+  <title>聴覚リダイレクション デモ</title>
+  <link rel="stylesheet" href="redirect.css?v=2.1.0">
+  <script src="redirect-core.js?v=2.1.0" defer></script>
+  <script src="redirect-audio.js?v=2.1.0" defer></script>
+  <script src="redirect.js?v=2.1.0" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#stageTitle">現在の手順へ</a>
 <header class="topbar">
-  <a class="brand" href="redirect.html"><span class="brand-icon" aria-hidden="true">◖</span><span>音で導く、見えない手<small>Sound-guided out-of-view retargeting</small></span></a>
-  <div class="top-actions"><span class="tag">VRに向けた机上プロトタイプ</span><button id="helpOpen" class="subtle">使い方</button><button id="resultsOpen" class="subtle">記録・書き出し</button><button id="pause" hidden>一時停止</button><button id="operator" hidden>設定に戻る</button></div>
+  <h1><span class="desktop-name">聴覚リダイレクション</span><span class="mobile-name">聴覚デモ</span></h1>
+  <span id="testBadge" class="test-badge" hidden>テスト入力</span>
+  <div class="top-actions">
+    <button id="conditionsOpen" class="subtle">条件</button>
+    <button id="settingsOpen" class="subtle">設定</button>
+    <button id="helpOpen" class="subtle" aria-label="使い方">?</button>
+    <button id="resultsOpen" class="subtle">記録</button>
+    <button id="pause" hidden>一時停止</button>
+    <button id="operator" class="subtle" hidden>終了</button>
+  </div>
 </header>
-<div id="storageWarning" class="notice warning" role="alert" hidden></div>
-<div id="notice" class="notice" role="status" aria-live="polite"></div>
-<main class="layout">
-  <aside class="operator-panel panel setup-panel">
-    <div class="section-title"><span class="eyebrow">01 / SETUP</span><h2>手と机を合わせる</h2><span id="setupBadge" class="status">準備前</span></div>
-    <p class="hint">PC・両耳のイヤホン・机を真上から映すカメラ・横向きのA4・色のシールを使います。</p>
-    <div class="camera-toolbar"><button id="camStart">カメラを使う</button><button id="camStop" class="subtle" hidden>停止</button><select id="camSel" aria-label="カメラを選ぶ" hidden></select></div>
-    <div class="camera-frame"><video id="video" muted playsinline hidden></video><canvas id="cam" width="640" height="480" aria-label="机のカメラ映像。案内に沿って紙の4隅と色をクリック"></canvas><span id="trackSt" class="camera-status">カメラ未接続</span></div>
-    <p id="setupPrompt" class="setup-prompt">まずカメラを開始してください。</p>
-    <div id="setupActions" class="button-row"></div>
-    <label class="range-label">色の許容幅 <input id="tol" type="range" min="6" max="35" value="16"><output id="tolValue">16°</output></label>
-    <details><summary>頭の位置・追跡の調整</summary><p class="hint">紙とシールは同じ高さの平面に。手を浮かせるとcmに誤差が出ます。カメラや紙を動かしたら登録し直します。</p><div class="numeric-row"><label>頭の中心：机の縁より後ろ <input id="headBehind" type="number" min="0" max="50" step="1" value="15"> cm</label><label>耳：追跡面より上 <input id="earAbove" type="number" min="5" max="100" step="1" value="35"> cm</label></div><button id="resetSetup" class="subtle">位置の登録をやり直す</button></details>
-    <label class="check"><input id="calibrationCheck" type="checkbox">配置・紙の向き・追跡の重なりを確認した</label>
-    <div class="audio-check"><h3>音を確認</h3><div class="button-row"><button id="testLeft" class="subtle">左だけ</button><button id="testRight" class="subtle">右だけ</button></div><label class="range-label">音量 <input id="volume" type="range" min="0.05" max="0.7" step="0.01" value="0.25"><output id="volumeValue">25%</output></label><label class="check"><input id="audioCheck" type="checkbox">左右と聞きやすい音量を確認した</label></div>
+<div class="messages"><div id="storageWarning" class="notice warning" role="alert" hidden></div><div id="notice" class="notice" role="status" aria-live="polite"></div></div>
+<nav class="flow" aria-label="体験の手順"><ol id="steps"><li data-step="setup" aria-current="step">1 準備</li><li data-step="learn">2 覚える</li><li data-step="reach">3 伸ばす</li><li data-step="answer">4 答える</li></ol><span id="sessionProgress"></span></nav>
+<main class="layout" id="mainLayout">
+  <aside class="operator-panel panel settings-panel" id="conditionsPanel" aria-label="条件">
+    <h2>条件</h2>
+    <fieldset id="configFields" class="config-fields">
+      <label for="kind">試し方</label><select id="kind" name="kind"><option value="demo">1回ずつ試す</option><option value="pilot">条件をまとめて比較</option><option value="baseline">音なしの到達を測る</option></select>
+      <p id="kindHelp" class="hint"></p>
+      <div id="manualConfig">
+        <label for="condition">音</label><select id="condition" name="condition"></select><p id="conditionHelp" class="hint"></p>
+        <div class="form-pair"><div><label for="angle">間隔</label><select id="angle" name="angle"><option value="5">5°</option><option value="10">10°</option><option value="15">15°</option><option value="20" selected>20°</option><option value="30">30°</option><option value="40">40°</option></select></div><div><label for="tool">取る対象</label><select id="tool" name="tool"><option value="A">A（赤）</option><option value="M">B（青）</option><option value="B">C（黄）</option></select></div></div>
+      </div>
+      <div id="pilotConfig" hidden><fieldset id="conditionChoices"><legend>音の条件</legend></fieldset><fieldset><legend>間隔</legend><div class="angle-choices"><label><input type="checkbox" name="angles" value="5">5°</label><label><input type="checkbox" name="angles" value="10" checked>10°</label><label><input type="checkbox" name="angles" value="15">15°</label><label><input type="checkbox" name="angles" value="20" checked>20°</label><label><input type="checkbox" name="angles" value="30">30°</label></div></fieldset><label for="repeats">反復数</label><input id="repeats" name="repeats" type="number" inputmode="numeric" min="1" max="10" value="2"><p id="trialCount" class="hint"></p></div>
+    </fieldset>
+    <div class="condition-key"><span><i class="dot red"></i>A</span><span><i class="dot blue"></i>B</span><span><i class="dot yellow"></i>C</span></div>
+    <p class="hint">位置はカメラ映像に重ねて表示</p>
   </aside>
 
-  <section class="workspace">
-    <div class="workspace-heading"><span id="viewLabel" class="eyebrow">02 / EXPERIENCE</span><span id="sessionProgress" class="muted">準備 → 覚える → 伸ばす → 答える</span></div>
-    <section id="stage" class="stage panel" aria-label="体験エリア">
-      <div class="stage-top"><span id="phaseLabel" class="status">準備</span><span id="timerLabel" class="muted"></span></div>
-      <canvas id="map" aria-label="机の模式図。画面上が机の奥、下が手前"></canvas>
-      <div id="stageOverlay" class="stage-overlay"><span id="stageKicker" class="eyebrow">ONE PROXY / THREE TARGETS</span><h1 id="stageTitle">覚えた場所へ、音を頼りに。</h1><p id="stageText">赤・青・黄の道具を覚え、見ずに手を伸ばします。音の導き方で、手の行き先は変わるでしょうか。</p><div id="stageButtons" class="button-row"></div></div>
-      <form id="answerForm" class="answer-form" hidden>
-        <h2>今の到達について</h2>
-        <fieldset><legend>覚えていた場所と、止めた場所のずれを感じましたか？</legend><div class="choices"><label><input type="radio" name="noticed" value="yes" required>感じた</label><label><input type="radio" name="noticed" value="no">感じなかった</label><label><input type="radio" name="noticed" value="unsure">分からない</label></div></fieldset>
-        <fieldset id="contactField"><legend>実物に触れましたか？ <small>自己申告</small></legend><div class="choices"><label><input type="radio" name="contact" value="yes">触れた</label><label><input type="radio" name="contact" value="no">届かなかった</label><label><input type="radio" name="contact" value="unsure">分からない</label></div></fieldset>
-        <fieldset><legend>ずれについての回答に、どのくらい自信がありますか？</legend><div class="choices confidence"><label><input type="radio" name="confidence" value="1" required>1<small>低い</small></label><label><input type="radio" name="confidence" value="2">2</label><label><input type="radio" name="confidence" value="3">3</label><label><input type="radio" name="confidence" value="4">4</label><label><input type="radio" name="confidence" value="5">5<small>高い</small></label></div></fieldset>
-        <button class="primary" type="submit">回答を保存</button>
+  <section id="stage" class="stage panel" aria-label="カメラと現在の手順">
+    <div id="stageOverlay" class="instruction-bar">
+      <div class="instruction-heading"><span id="phaseLabel" class="status">準備 1 / 8</span><h2 id="stageTitle" tabindex="-1">カメラを開始してください</h2><span id="timerLabel"></span></div>
+      <p id="stageText" aria-live="polite">机を真上から映します。</p>
+    </div>
+    <div id="visualSurface" class="visual-surface">
+      <div id="cameraView" class="camera-view">
+        <video id="video" muted playsinline hidden></video>
+        <canvas id="cam" width="640" height="480" tabindex="0" aria-label="机のカメラ映像。案内された場所をクリック。矢印キーとEnterでも指定できます。"></canvas>
+        <svg id="objectOverlay" viewBox="0 0 640 480" aria-label="机に重ねた対象" xmlns="http://www.w3.org/2000/svg">
+          <g id="paperOverlay" aria-hidden="true"></g>
+          <g id="startOverlay" class="point-label" hidden><circle r="14"></circle><text y="-21">S</text></g>
+          <g id="bodyOverlay" class="point-label" hidden><circle r="8"></circle><text y="-16">体</text></g>
+          <g id="targetA" data-target="A" class="object object-a" role="img" aria-label="A、赤" hidden><path class="object-shadow"></path><path class="object-face"></path><text class="object-letter">A</text></g>
+          <g id="targetM" data-target="M" class="object object-b" role="img" aria-label="B、青" hidden><path class="object-shadow"></path><path class="object-face"></path><text class="object-letter">B</text></g>
+          <g id="targetB" data-target="B" class="object object-c" role="img" aria-label="C、黄" hidden><path class="object-shadow"></path><path class="object-face"></path><text class="object-letter">C</text></g>
+          <g id="proxyOverlay" class="proxy-label" hidden><text y="38">実物 P</text></g>
+          <g id="trailOverlay" aria-hidden="true" hidden></g>
+          <g id="handOverlay" class="hand-marker" aria-label="手のシール" hidden><circle r="18"></circle></g>
+          <g id="keyboardCursor" class="keyboard-cursor" hidden><circle r="9"></circle><path d="M-18 0H18M0-18V18"></path></g>
+        </svg>
+      </div>
+      <div id="stageMask" class="stage-mask" hidden><strong id="maskCue"></strong></div>
+      <form id="answerForm" class="answer-form" novalidate hidden>
+        <fieldset><legend>覚えた場所とずれていた？</legend><div class="choices"><label><input type="radio" name="noticed" value="yes" required>ずれていた</label><label><input type="radio" name="noticed" value="no">ずれていない</label><label><input type="radio" name="noticed" value="unsure">分からない</label></div></fieldset>
+        <fieldset id="contactField"><legend>実物に触れた？</legend><div class="choices"><label><input type="radio" name="contact" value="yes">触れた</label><label><input type="radio" name="contact" value="no">届かなかった</label><label><input type="radio" name="contact" value="unsure">分からない</label></div></fieldset>
+        <fieldset><legend>ずれの回答への自信</legend><div class="choices confidence"><label><input type="radio" name="confidence" value="1" required>1<small>低い</small></label><label><input type="radio" name="confidence" value="2">2</label><label><input type="radio" name="confidence" value="3">3</label><label><input type="radio" name="confidence" value="4">4</label><label><input type="radio" name="confidence" value="5">5<small>高い</small></label></div></fieldset>
+        <p id="answerError" class="field-error" role="alert" hidden></p><button class="primary" type="submit">回答を保存</button>
       </form>
-      <div id="feedback" class="feedback" hidden></div>
-    </section>
-    <div class="stage-footer"><span id="trackingHint">追跡はカメラの色シールを使います。</span><span><kbd>Space</kbd> 到達で止める <span class="divider">/</span> <kbd>F</kbd> 届かなかった <span class="divider">/</span> <kbd>Esc</kbd> 中断</span></div>
-    <div class="operator-panel concept-note"><b>見たいのは「届く」と「気づかれにくい」の両方。</b><p>位置のばらつきだけで成功とは判定しません。机上・目を閉じた体験から、VRでの検出閾値は推定しません。<a href="RESEARCH_REVIEW.md" target="_blank" rel="noopener">評価・変更の根拠を読む ↗</a></p></div>
+      <div id="trackSt" class="camera-status">カメラ未接続</div>
+    </div>
+    <div id="feedback" class="feedback" hidden></div>
+    <div class="action-bar">
+      <div id="setupControls" class="button-row">
+        <button id="camStart" class="primary">カメラを開始</button>
+        <div id="audioControls" class="audio-controls" hidden><button id="testLeft">左を聞く</button><button id="testRight">右を聞く</button><label class="volume-label">音量<input id="volume" name="volume" type="range" min="0.05" max="0.7" step="0.01" value="0.25"><output id="volumeValue">25%</output></label></div>
+        <div id="setupActions" class="button-row"></div>
+        <button id="startSession" class="primary" disabled hidden>配置を覚える</button><button id="resumeSession" class="primary" hidden>続きから</button><button id="closeSavedSession" class="subtle" hidden>新しく始める</button>
+      </div>
+      <div id="stageButtons" class="button-row" hidden></div>
+      <span id="trackingHint" class="hint"></span>
+    </div>
   </section>
 
-  <aside class="operator-panel panel settings-panel">
-    <div class="section-title"><span class="eyebrow">03 / PROTOCOL</span><h2>試し方を選ぶ</h2></div>
-    <fieldset id="configFields" class="config-fields">
-      <label class="field-label" for="kind">目的</label><select id="kind"><option value="demo">1回体験する・答え合わせあり</option><option value="baseline">予備：音なしの到達誤差</option><option value="pilot">比較記録・途中の答え合わせなし</option></select>
-      <p id="kindHelp" class="hint"></p>
-      <label class="field-label" for="knowledge">体験する人</label><select id="knowledge"><option value="known">設置者本人・仕組みを知っている</option><option value="participant">別の参加者・実験者が準備する</option></select>
-      <div id="manualConfig"><label class="field-label" for="condition">音の条件</label><select id="condition"></select><p id="conditionHelp" class="hint"></p><label class="field-label" for="angle">中央からの間隔</label><select id="angle"><option>5</option><option>10</option><option>15</option><option selected>20</option><option>30</option><option>40</option></select><label class="field-label" for="tool">指示する道具</label><select id="tool"><option value="A">赤・前</option><option value="M">青・中央（ずれ0）</option><option value="B">黄・後ろ</option></select></div>
-      <div id="pilotConfig" hidden><fieldset id="conditionChoices"><legend>比べる条件</legend></fieldset><fieldset><legend>間隔（頭を中心とする角度）</legend><div class="angle-choices"><label><input type="checkbox" name="angles" value="5">5°</label><label><input type="checkbox" name="angles" value="10" checked>10°</label><label><input type="checkbox" name="angles" value="15">15°</label><label><input type="checkbox" name="angles" value="20" checked>20°</label><label><input type="checkbox" name="angles" value="30">30°</label></div></fieldset><label class="field-label" for="repeats">各組み合わせの反復数</label><input id="repeats" type="number" min="1" max="10" value="2"><p id="trialCount" class="hint"></p></div>
-      <label class="field-label" for="equipment">機材メモ（任意・端末内に保存）</label><textarea id="equipment" rows="2" maxlength="500" placeholder="イヤホン、追跡面の高さ、姿勢など"></textarea>
-    </fieldset>
-    <button id="startSession" class="primary wide" disabled>準備を完了してください</button><button id="resumeSession" class="wide" hidden>前の記録を再開</button><button id="closeSavedSession" class="subtle wide" hidden>未完了の記録を終了して、別に始める</button>
-    <div class="protocol-steps"><h3>伸ばすときの約束</h3><ol><li>Sで手を止め、画面の「開始」を押す。</li><li>指示を覚え、目を閉じる。合図で伸ばす。</li><li>最初の接触で、反対の手でSpace。届かなければF。手探りはしない。</li><li>回答してから、Sへ戻す。</li></ol><p class="hint">比較記録の準備画面は実験者が操作します。参加者に見せるのは開始後の配置と案内です。</p></div>
-    <nav class="related"><a href="index.html">音の位置当て ↗</a><a href="experiment.html">旧マウス予備実験 ↗</a></nav>
+  <aside class="operator-panel panel setup-panel" aria-label="準備の進み具合">
+    <div class="panel-heading"><h2>準備</h2><span id="setupBadge" class="status">0 / 8</span></div>
+    <ol id="setupList" class="setup-list"><li>カメラ</li><li>A4の4隅</li><li>シールの色</li><li>体の位置</li><li>開始位置 S</li><li>実物の位置 P</li><li>配置を確認</li><li>左右の音</li></ol>
+    <div id="paperGuide" class="paper-guide" hidden><span>奥</span><div class="paper-reference"><b data-corner="3">4</b><b data-corner="2">3</b><span>A4 横</span><b data-corner="0">1</b><b data-corner="1">2</b></div><span>手前（自分）</span></div>
+    <button id="resetSetup" class="subtle wide">準備をやり直す</button>
   </aside>
 </main>
+<input id="calibrationCheck" type="checkbox" aria-label="配置確認済み" hidden><input id="audioCheck" type="checkbox" aria-label="左右の音を確認済み" hidden>
 
-<dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-heading"><h2 id="helpTitle">最初の準備</h2><button data-close="helpDialog" aria-label="使い方を閉じる">閉じる</button></div><ol class="help-list"><li><b>机を映す。</b>カメラを机の真上に固定。横置きのA4を、机の手前の縁と平行に置きます。</li><li><b>平面を合わせる。</b>紙の手前左 → 手前右 → 奥右 → 奥左の順にクリック。指先の色シールも、校正した面と同じ高さで動かします。</li><li><b>色と3つの位置。</b>鮮やかなシールをクリック。体の中央をクリックし、手を置いてSとPをボタンで登録。Pは体の右側です。同色の道具や服は追跡の邪魔になります。</li><li><b>実物と音。</b>Pに固定ボタンなどを置き、頭と椅子の位置を保ちます。左右の音を確認。予備の「音なしの到達誤差」では実物を取り除きます。</li><li><b>まず1回体験。</b>位置を覚えたら目を閉じ、合図で手を伸ばします。位置を止めただけでは接触と判定しません。</li></ol><p>カメラ映像は送信・録画しません。座標・回答・機材メモはこのブラウザに保存します。保存できない場合も、その場で書き出せます。</p><p class="hint">頭部追跡・個人HRTF・物理接触センサーは未実装です。実寸値は平面校正に基づく推定です。</p><a href="REDIRECT_PROTOCOL.md" target="_blank" rel="noopener">詳しい操作・記録仕様 ↗</a></dialog>
+<dialog id="conditionsDialog" aria-labelledby="conditionsTitle"><div class="dialog-heading"><h2 id="conditionsTitle">条件</h2><button data-close="conditionsDialog">閉じる</button></div><div id="conditionsDialogBody"></div></dialog>
 
-<dialog id="resultsDialog" aria-labelledby="resultsTitle"><div class="dialog-heading"><h2 id="resultsTitle">記録・書き出し</h2><button data-close="resultsDialog">閉じる</button></div><label for="sessionSelect">表示するセッション</label><select id="sessionSelect"></select><p id="resultMeta" class="hint"></p><div class="button-row"><button id="exportTrials">到達・回答 CSV</button><button id="exportPaths">軌跡 CSV</button><button id="exportJson">全記録 JSON</button><button id="exportLegacy" class="subtle" hidden>旧版の記録 JSON</button></div><p id="resultNote" class="hint"></p><div id="resultTable" class="table-scroll"></div><p class="hint">接触率は自己申告の yes / (yes + no)。不明は別に表示。ずれ0の「感じた」は誤警報として確認します。方向を混ぜず、同じ間隔・道具の音なし条件と比べてください。</p></dialog>
+<dialog id="settingsDialog" aria-labelledby="settingsTitle"><div class="dialog-heading"><h2 id="settingsTitle">設定</h2><button data-close="settingsDialog">閉じる</button></div><div class="dialog-tabs" role="tablist" aria-label="設定の種類"><button id="trackingTab" role="tab" aria-controls="trackingSettings" aria-selected="true">追跡</button><button id="recordingTab" role="tab" aria-controls="recordingSettings" aria-selected="false">記録</button></div>
+  <section id="trackingSettings" role="tabpanel" aria-labelledby="trackingTab"><label for="camSel">カメラ</label><select id="camSel" name="camera" aria-label="カメラを選ぶ" hidden></select><button id="camStop" class="subtle" hidden>カメラを停止</button><label for="tol">色の許容幅 <output id="tolValue">16°</output></label><input id="tol" name="tolerance" type="range" min="6" max="35" value="16"><div class="form-pair"><div><label for="headBehind">頭：机の縁より後ろ</label><div class="unit-input"><input id="headBehind" name="headBehind" type="number" inputmode="numeric" min="0" max="50" value="15"><span>cm</span></div></div><div><label for="earAbove">耳：追跡面より上</label><div class="unit-input"><input id="earAbove" name="earAbove" type="number" inputmode="numeric" min="5" max="100" value="35"><span>cm</span></div></div></div><p class="hint">紙とシールは同じ高さに。カメラ・紙を動かしたら準備をやり直してください。</p></section>
+  <section id="recordingSettings" role="tabpanel" aria-labelledby="recordingTab" hidden><label for="knowledge">体験する人</label><select id="knowledge" name="knowledge"><option value="known">仕組みを知っている</option><option value="participant">初めて体験する参加者</option></select><label for="equipment">機材メモ（任意）</label><textarea id="equipment" name="equipment" rows="3" maxlength="500" autocomplete="off" placeholder="例：有線イヤホン…"></textarea><p class="hint">座標・回答・メモはこのブラウザに保存します。</p></section>
+</dialog>
 
-<dialog id="finalDialog" aria-labelledby="finalTitle"><form id="finalForm"><h2 id="finalTitle">最後に、体験全体について</h2><label class="field-label" for="realCount">実物はいくつあったと思いますか？</label><select id="realCount" required><option value="">選択してください</option><option value="1">1つ</option><option value="2">2つ</option><option value="3">3つ</option><option value="unsure">分からない</option><option value="known">事前に数を知っていた</option></select><label class="field-label" for="finalComment">何か気づいたこと（任意）</label><textarea id="finalComment" rows="3" maxlength="2000"></textarea><button class="primary" type="submit">保存して終了</button></form></dialog>
-<noscript><p class="notice warning">このデモにはJavaScriptが必要です。</p></noscript>
+<dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-heading"><h2 id="helpTitle">使い方</h2><button data-close="helpDialog">閉じる</button></div><ol class="help-list"><li>真上から机を映し、横向きのA4とシールを用意。</li><li>画面の案内どおりに場所を登録。</li><li>映像のA・B・Cを覚え、Sへ戻す。</li><li>指示を聞いて目を閉じ、合図で伸ばす。</li><li>最初の接触で反対の手で <kbd>Space</kbd>。届かなければ <kbd>F</kbd>。</li></ol><p class="hint">映像は送信・録画しません。接触は自己申告です。</p><a href="REDIRECT_PROTOCOL.md" target="_blank" rel="noopener">詳しい手順</a><span class="link-separator"> / </span><a href="UI_REDESIGN.md" target="_blank" rel="noopener">設計の根拠</a></dialog>
+
+<dialog id="resultsDialog" aria-labelledby="resultsTitle"><div class="dialog-heading"><h2 id="resultsTitle">記録</h2><button data-close="resultsDialog">閉じる</button></div><label for="sessionSelect">記録を選ぶ</label><select id="sessionSelect" name="session"></select><p id="resultMeta" class="hint"></p><div class="button-row"><button id="exportTrials">回答 CSV</button><button id="exportPaths">軌跡 CSV</button><button id="exportJson">すべて JSON</button><button id="exportLegacy" class="subtle" hidden>旧版 JSON</button></div><p id="resultNote" class="hint"></p><div id="resultTable" class="table-scroll"></div></dialog>
+
+<dialog id="finalDialog" aria-labelledby="finalTitle"><form id="finalForm"><h2 id="finalTitle">最後の質問</h2><label for="realCount">実物はいくつあったと思う？</label><select id="realCount" name="realCount" required><option value="">選択</option><option value="1">1つ</option><option value="2">2つ</option><option value="3">3つ</option><option value="unsure">分からない</option><option value="known">事前に知っていた</option></select><label for="finalComment">気づいたこと（任意）</label><textarea id="finalComment" name="finalComment" rows="2" maxlength="2000" autocomplete="off"></textarea><button class="primary" type="submit">保存して終了</button></form></dialog>
+<noscript>このデモにはJavaScriptが必要です。</noscript>
 </body>
 </html>

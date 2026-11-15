@@ -8,145 +8,115 @@
 :root{--bg:#f3f4f7;--card:#fff;--ink:#16181d;--muted:#6b7280;--line:#e5e7eb;--accent:#4f46e5;--p:#10b981;--snd:#a855f7;
   font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-size:13px;line-height:1.5;display:flex;flex-direction:column}
 [hidden]{display:none!important}
-header{display:flex;align-items:center;gap:14px;padding:12px 22px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
-header h1{font-size:16px;margin:0}
-.app{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px 22px;max-width:1500px;margin:0 auto}
-.card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 2px #0000000d}
-.side{display:flex;flex-direction:column;gap:12px}
-.side.lockedui{opacity:.45;pointer-events:none}
-h2{font-size:13px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
-h2 .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#eef2ff;color:var(--accent);font-size:12px}
-.st{margin-left:auto;font-size:12px;border-radius:99px;padding:1px 9px;font-weight:600}
-.st.ok{color:#166534;background:#dcfce7}.st.ng{color:#92400e;background:#fef3c7}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line);flex:none}
+header h1{font-size:15px;margin:0 8px 0 0}
+.sp{flex:1}
 .muted{color:var(--muted);font-size:12px}
-.btn{border:0;border-radius:10px;padding:8px 13px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}
-.btn.sub{background:#eef2ff;color:var(--accent)}
-.btn.small{padding:5px 10px;font-size:12px;border-radius:8px}
-.btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
-.lbl{font-size:12px;font-weight:700;margin:12px 0 6px}
-input[type=number]{width:60px;font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:8px}
-input[type=range]{accent-color:var(--accent)}
-.seg{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;gap:2px}
-.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:6px 4px;font:inherit;cursor:pointer;color:var(--muted)}
+.btn{border:0;border-radius:8px;padding:6px 11px;font:inherit;font-weight:700;cursor:pointer;background:#eef2ff;color:var(--accent)}
+.btn.pri{background:var(--accent);color:#fff}
+.seg{display:flex;background:#f1f5f9;border-radius:9px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:7px;padding:5px 10px;font:inherit;cursor:pointer;color:var(--muted)}
 .seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 2px #0002}
-table.ctab{width:100%;border-collapse:separate;border-spacing:4px;font-size:12px}
-.ctab th{font-weight:600;color:var(--muted);text-align:left;padding:0 2px}
+.app{flex:1;min-height:0;display:grid;grid-template-columns:290px 1fr;gap:12px;padding:12px}
+.side{display:flex;flex-direction:column;gap:10px;min-height:0}
+.side.off{opacity:.4;pointer-events:none}
+.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 1px 2px #0000000d}
+.lbl{font-size:12px;font-weight:700;margin:0 0 6px}
+table.ctab{width:100%;border-collapse:separate;border-spacing:3px;font-size:12px}
+.ctab th{font-weight:600;color:var(--muted);text-align:left;font-size:11px}
 .ctab thead th{text-align:center}
 .ctab td{padding:0}
-.ctab button{width:100%;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:6px 8px;font:inherit;font-size:11px;cursor:pointer;line-height:1.35;color:var(--muted)}
-.ctab button b{font-size:15px;color:var(--ink);margin-right:4px}
-.ctab button[aria-pressed=true]{border-color:var(--accent);background:#eef2ff;color:#3730a3}
-.chips{display:flex;flex-wrap:wrap;gap:5px}
-.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:3px 11px;font:inherit;font-size:12px;cursor:pointer}
+.ctab button{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:6px 0;font:inherit;font-size:15px;cursor:pointer}
+.ctab button[aria-pressed=true]{border-color:var(--accent);background:#eef2ff;color:#3730a3;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:2px 10px;font:inherit;cursor:pointer}
 .chip[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
-.prog{height:6px;background:#eef2ff;border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.prog{height:6px;background:#eef2ff;border-radius:99px;overflow:hidden;margin:6px 0 2px}
 .prog i{display:block;height:100%;background:var(--accent);width:0}
-.main{display:flex;flex-direction:column;gap:12px;min-width:0}
-.stage{position:relative;padding:0;overflow:hidden}
-.steps{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
-.steps span{font-size:12px;padding:4px 11px;border-radius:99px;background:#f1f5f9;color:#9ca3af}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.stage{position:relative;padding:0;overflow:hidden;min-height:0;display:flex;flex-direction:column}
+.steps{display:flex;gap:5px;padding:8px 12px;border-bottom:1px solid var(--line);align-items:center;flex:none}
+.steps span{font-size:12px;padding:3px 10px;border-radius:99px;background:#f1f5f9;color:#9ca3af}
 .steps span.now{background:var(--accent);color:#fff;font-weight:700}
 .steps .info{margin-left:auto;background:none;color:var(--muted);padding:0}
-canvas{display:block;width:100%;height:min(60vh,580px);background:#fff;cursor:pointer}
-.banner{position:absolute;left:0;right:0;top:45px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px 20px 0;gap:4px;pointer-events:none;text-align:center}
-.banner big{font-size:clamp(18px,2.2vw,26px);font-weight:800;background:#ffffffe6;padding:2px 12px;border-radius:10px}
-.banner small{font-size:14px;color:var(--muted);background:#ffffffe6;padding:0 10px;border-radius:8px}
+canvas{display:block;width:100%;flex:1;min-height:0;background:#fff;cursor:pointer}
+.banner{position:absolute;left:0;right:0;top:40px;bottom:0;display:flex;flex-direction:column;align-items:center;padding-top:14px;gap:2px;pointer-events:none;text-align:center}
+.banner big{font-size:clamp(18px,2.2vw,26px);font-weight:800;background:#ffffffe6;padding:0 12px;border-radius:10px}
+.banner small{font-size:13px;color:var(--muted);background:#ffffffe6;padding:0 10px;border-radius:8px}
 .banner.dark{background:#0b0d12;justify-content:center;padding-top:0}
 .banner.dark big{background:none;color:#e5e7eb}.banner.dark small{background:none;color:#9ca3af}
-.facts{display:grid;grid-template-columns:auto 1fr;gap:14px 24px;align-items:center}
-.pull{font-size:40px;font-weight:800;line-height:1}
-.pull small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:4px}
-.facts ul{margin:0;padding-left:18px}
-.final{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
-table.heat{border-collapse:separate;border-spacing:3px;font-size:12px;width:100%}
-.heat th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px}
+.res{position:absolute;left:12px;bottom:12px;background:#fffffff2;border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 4px 16px #0001;max-width:360px}
+.res .big{font-size:30px;font-weight:800;line-height:1.1}
+.res .big small{font-size:12px;color:var(--muted);font-weight:600;margin-left:6px}
+.res p{margin:4px 0 0}
+dialog{border:0;border-radius:14px;padding:18px;max-width:min(900px,95vw);box-shadow:0 20px 60px #0003}
+dialog::backdrop{background:#0006}
+table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
+.heat th{font-weight:600;color:var(--muted);text-align:center;padding:2px 6px}
 .heat th:first-child{text-align:left;white-space:nowrap}
-.heat td{text-align:center;border-radius:6px;padding:5px 2px;min-width:56px}
+.heat td{text-align:center;border-radius:6px;padding:4px 8px;min-width:60px}
 .heat td b{display:block;font-size:13px}
 .heat td span{font-size:10px;opacity:.85}
-.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;margin-top:8px}
-.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:4px}
-@media(max-width:1000px){.app{grid-template-columns:1fr;padding:12px}}
 </style>
 </head>
 <body>
-<header><h1>🎧 聴覚リダイレクション デモ</h1><span class="muted">視界の外に道具が3つ。本物は1つ。音で本物へ導いたとき、気づかれるか</span></header>
+<header>
+  <h1>🎧 聴覚リダイレクション</h1>
+  <div class="seg" id="mode"><button data-v="auto">自動</button><button data-v="manual">手動</button></div>
+  <span class="sp"></span>
+  <span class="muted" id="warn"></span>
+  <button class="btn" id="tl">◀ 左</button><button class="btn" id="tr">右 ▶</button>
+  <input type="range" id="vol" min="0" max="1" step="0.01" value="0.6" style="width:80px" title="音量">
+  <button class="btn" id="sumBtn">まとめ</button>
+  <button class="btn" id="redo">準備し直す</button>
+</header>
 
 <div class="app">
-<aside class="side" id="side">
-  <div class="card">
-    <h2><span class="n">1</span>ヘッドホン</h2>
-    <div class="btns"><button class="btn sub small" id="tl">◀ 左から鳴らす</button><button class="btn sub small" id="tr">右から鳴らす ▶</button>
-      <span class="muted" style="margin-left:auto">音量</span><input type="range" id="vol" min="0" max="1" step="0.01" value="0.6" style="width:90px"></div>
-  </div>
-
-  <div class="card">
-    <h2><span class="n">2</span>本物P<span id="pSt" class="st ng">未記録</span></h2>
-    <p class="muted" style="margin:0" id="pInfo"></p>
-    <div class="btns" style="margin-top:6px"><button class="btn sub small" id="regP" hidden>Pを記録し直す</button></div>
-  </div>
-
-  <div class="card">
-    <h2><span class="n">3</span>進め方</h2>
-    <div class="seg" id="mode"><button data-v="auto">自動で順番に</button><button data-v="manual">手動で選ぶ</button></div>
-
-    <div class="lbl" id="condLbl">音の条件</div>
-    <table class="ctab">
-      <thead><tr><th>鳴る場所</th><th>鳴りっぱなし型</th><th>バックセンサー型</th></tr></thead>
-      <tbody id="ctab"></tbody>
-    </table>
-
-    <div class="lbl" id="angLbl">道具どうしの間隔（Pから A・B までの角度）</div>
-    <div class="chips" id="angChips"></div>
-
-    <div id="autoBox">
-      <div class="row"><span class="muted">1つの間隔で、各条件×各道具を</span><span><input type="number" id="reps" min="1" max="5" value="1"> 回</span></div>
-      <div class="prog"><i id="progBar"></i></div>
-      <div class="row" style="margin:0"><span class="muted" id="progTxt"></span><button class="btn sub small" id="restart">最初から</button></div>
+  <aside class="side" id="side">
+    <div class="card">
+      <div class="lbl" id="condLbl">音の条件</div>
+      <table class="ctab">
+        <thead><tr><th></th><th>鳴りっぱなし</th><th>バックセンサー</th></tr></thead>
+        <tbody id="ctab"></tbody>
+      </table>
+      <div class="muted" id="condName" style="margin-top:4px;min-height:1.5em"></div>
     </div>
-    <div id="manualBox" hidden>
+    <div class="card">
+      <div class="lbl" id="angLbl">道具の間隔</div>
+      <div class="chips" id="angChips"></div>
+    </div>
+    <div class="card" id="manualBox">
       <div class="lbl">取る道具</div>
-      <div class="seg" id="toolSeg"><button data-v="A">A 赤（左）</button><button data-v="M">M 青（真ん中）</button><button data-v="B">B 黄（右）</button><button data-v="rand">ランダム</button></div>
+      <div class="seg" id="toolSeg"><button data-v="A">赤 左</button><button data-v="M">青 中</button><button data-v="B">黄 右</button><button data-v="rand">🎲</button></div>
     </div>
-  </div>
+    <div class="card" id="autoBox">
+      <div class="row"><span class="lbl" style="margin:0">進み具合</span><button class="btn" id="restart">最初から</button></div>
+      <div class="prog"><i id="progBar"></i></div>
+      <div class="muted" id="progTxt"></div>
+    </div>
+  </aside>
 
-  <details class="card muted"><summary style="cursor:pointer"><b>間隔の角度の根拠（先行研究）</b></summary>
-    <ul style="padding-left:16px;margin:8px 0 0">
-      <li>見える手の検出閾値：約±4.5°（Zenner &amp; Krüger 2019、−14〜+14°で測定）</li>
-      <li>質問の仕方を変えると 9〜17°（Katori 2025）</li>
-      <li>0・4・8・16°で比較（Gonzalez &amp; Follmer 2019）、16°回し（Azmandian 2016）</li>
-      <li>13本のまとめで 2〜45°（レビュー）／気づいても許せる上限 40°（Cheng 2017）</li>
-    </ul>
-    <p style="margin:6px 0 0">視界の外は見える手より大きくずらせるはず、という仮説なので 5〜40°を用意。</p>
-  </details>
-</aside>
-
-<section class="main">
-  <div class="card stage">
-    <div class="steps" id="steps"><span>覚える</span><span>スタート</span><span>声で指示</span><span>手を伸ばす</span><span>答える</span><span>結果</span><span class="info" id="trialInfo"></span></div>
+  <section class="card stage">
+    <div class="steps" id="steps"><span>準備</span><span>覚える</span><span>声</span><span>伸ばす</span><span>答える</span><span class="info" id="trialInfo"></span></div>
     <canvas id="cv"></canvas>
     <div class="banner" id="banner"><big id="bBig"></big><small id="bSmall"></small></div>
-  </div>
-
-  <div class="card" id="resCard" hidden>
-    <div class="facts"><div class="pull" id="rPull"></div><ul id="rList"></ul></div>
-    <div class="legend"><span><i style="background:#ef4444"></i>A 赤</span><span><i style="background:#2563eb"></i>M 青</span><span><i style="background:#d97706"></i>B 黄</span><span><i style="background:var(--p)"></i>本物P</span><span><i style="background:var(--snd)"></i>音源の動き</span><span><i style="background:#111827"></i>手の軌跡</span></div>
-    <div class="final" id="finalBox" hidden>
-      <b>全部終わりました。本物はいくつあったと思いますか？</b>
-      <div class="btns" style="margin-top:6px"><button class="btn sub" data-real="1">1つ</button><button class="btn sub" data-real="2">2つ</button><button class="btn sub" data-real="3">3つ</button><span class="muted" id="realAns"></span></div>
+    <div class="res" id="res" hidden>
+      <div class="big" id="rBig"></div>
+      <p id="rTxt"></p>
+      <div id="finalBox" hidden style="margin-top:8px"><b>本物はいくつあった？</b>
+        <button class="btn" data-real="1">1</button><button class="btn" data-real="2">2</button><button class="btn" data-real="3">3</button> <span class="muted" id="realAns"></span></div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="row" style="margin:0 0 6px"><h2 style="margin:0">まとめ</h2><button class="btn sub small" id="clearAll">結果を消す</button></div>
-    <div style="overflow-x:auto"><table class="heat" id="heat"></table></div>
-    <p class="muted" style="margin:6px 0 0">A・Bを取った回：Pへ引っぱられた割合の平均（0%＝覚えた道具の場所、100%＝本物P）。真ん中Mの回：ずらしなし（比較用）なので、角度のずれを表示。<br>下の小さい数字＝「ずれていた」と答えた回数／回答数。</p>
-  </div>
-</section>
+  </section>
 </div>
+
+<dialog id="sumDlg">
+  <div class="row" style="margin-bottom:8px"><b>まとめ（本物Pへ引っぱられた割合）</b><span><button class="btn" id="clearAll">消す</button> <button class="btn pri" id="sumClose">閉じる</button></span></div>
+  <table class="heat" id="heat"></table>
+  <p class="muted" style="margin:8px 0 0">0%＝覚えた道具の場所、100%＝本物P。小さい数字＝「ずれていた」／回答数。真ん中は本物と同じ場所なので角度のずれ。</p>
+</dialog>
 
 <script>
 (() => {
@@ -160,39 +130,42 @@ const store = {
 // ===== 道具と条件 =====
 const TOOLS = { A: { name: '赤', side: -1, color: '#ef4444', pos: '左' }, M: { name: '青', side: 0, color: '#2563eb', pos: '真ん中' }, B: { name: '黄', side: 1, color: '#d97706', pos: '右' } };
 const CONDS = [
-  { id: 'none', loc: null, type: null, name: '音なし', mark: '', note: '記憶だけで手を伸ばす' },
-  { id: 'T-c', loc: 'T', type: 'c', name: '道具の場所 × 鳴りっぱなし', mark: '○', note: '取る道具の場所から鳴る。かえってバレる？' },
-  { id: 'T-s', loc: 'T', type: 's', name: '道具の場所 × バックセンサー', mark: '×', note: '道具の場所へ導くので空振りする（除外候補）' },
-  { id: 'P-c', loc: 'P', type: 'c', name: '本物の場所 × 鳴りっぱなし', mark: '△', note: '本物の場所が正直に分かる' },
-  { id: 'P-s', loc: 'P', type: 's', name: '本物の場所 × バックセンサー', mark: '◎', note: '本物へまっすぐ導く' },
-  { id: 'W-c', loc: 'W', type: 'c', name: 'ワーピング × 鳴りっぱなし', mark: '◎', note: '手と一緒に道具→本物へ動く' },
-  { id: 'W-s', loc: 'W', type: 's', name: 'ワーピング × バックセンサー', mark: '○', note: '導く先が道具→本物へ移る' },
+  { id: 'none', loc: null, type: null, name: '音なし', mark: '−' },
+  { id: 'T-c', loc: 'T', type: 'c', name: '道具の場所 × 鳴りっぱなし', mark: '○' },
+  { id: 'T-s', loc: 'T', type: 's', name: '道具の場所 × バックセンサー', mark: '×' },
+  { id: 'P-c', loc: 'P', type: 'c', name: '本物の場所 × 鳴りっぱなし', mark: '△' },
+  { id: 'P-s', loc: 'P', type: 's', name: '本物の場所 × バックセンサー', mark: '◎' },
+  { id: 'W-c', loc: 'W', type: 'c', name: 'ワーピング × 鳴りっぱなし', mark: '◎' },
+  { id: 'W-s', loc: 'W', type: 's', name: 'ワーピング × バックセンサー', mark: '○' },
 ];
 const CMAP = Object.fromEntries(CONDS.map(c => [c.id, c]));
 const ANGLES = [5, 10, 15, 20, 30, 40];
-const ARM_CM = 45; // なぞった長さ＝腕を伸ばした長さ（約45cm）とみなす
+const ARM_CM = 45; // 音の距離感用：スタート→Pを約45cmとみなす
 
-let set = Object.assign({ mode: 'auto', conds: CONDS.map(c => c.id), angles: [10, 20, 30], reps: 1, mCond: 'W-c', mAng: 20, mTool: 'rand' }, store.get('ar3.set', {}));
-let reg = store.get('ar3.reg', null);         // { Pc:{x,y} マウスの移動量 }
-let learned = store.get('ar3.learned', null); // 覚えた間隔（角度）
-let plan = store.get('ar3.plan', null);       // { blocks:[{ang, trials:[{cond,tool}]}], b, i, real }
-let history = store.get('ar3.history', []);
-function save() { store.set('ar3.set', set); store.set('ar3.reg', reg); store.set('ar3.learned', learned); store.set('ar3.plan', plan); store.set('ar3.history', history); }
+let set = Object.assign({ mode: 'auto', conds: CONDS.map(c => c.id), angles: [10, 20, 30], mCond: 'W-c', mAng: 20, mTool: 'rand' }, store.get('ar4.set', {}));
+let reg = store.get('ar4.reg', null);         // { d: スタート→Pのマウス移動量 }
+let learned = store.get('ar4.learned', null);
+let plan = store.get('ar4.plan', null);
+let history = store.get('ar4.history', []);
+function save() { store.set('ar4.set', set); store.set('ar4.reg', reg); store.set('ar4.learned', learned); store.set('ar4.plan', plan); store.set('ar4.history', history); }
 
 // ===== 左パネル =====
 const ctab = $('ctab');
-[['道具の場所', 'T'], ['本物の場所', 'P'], ['ワーピング', 'W']].forEach(([lab, loc]) => {
+[['道具', 'T'], ['本物', 'P'], ['ワーピング', 'W']].forEach(([lab, loc]) => {
   const tr = document.createElement('tr'); tr.innerHTML = `<th>${lab}</th>`;
-  ['c', 's'].forEach(type => { const c = CONDS.find(x => x.loc === loc && x.type === type); const td = document.createElement('td');
-    td.innerHTML = `<button data-c="${c.id}"><b>${c.mark}</b>${c.note}</button>`; tr.appendChild(td); });
+  ['c', 's'].forEach(type => { const c = CONDS.find(x => x.loc === loc && x.type === type); tr.insertAdjacentHTML('beforeend', `<td><button data-c="${c.id}" title="${c.name}">${c.mark}</button></td>`); });
   ctab.appendChild(tr);
 });
-ctab.insertAdjacentHTML('beforeend', `<tr><th>音なし</th><td colspan="2"><button data-c="none"><b>−</b>${CMAP.none.note}</button></td></tr>`);
-ctab.querySelectorAll('button').forEach(b => b.onclick = () => {
-  if (busy()) return; const id = b.dataset.c;
-  if (set.mode === 'manual') set.mCond = id;
-  else { const s = new Set(set.conds); s.has(id) ? s.delete(id) : s.add(id); if (!s.size) return; set.conds = CONDS.map(c => c.id).filter(x => s.has(x)); plan = null; }
-  save(); sync(); render();
+ctab.insertAdjacentHTML('beforeend', `<tr><th>音なし</th><td colspan="2"><button data-c="none" title="音なし">−</button></td></tr>`);
+ctab.querySelectorAll('button').forEach(b => {
+  b.onmouseenter = () => { $('condName').textContent = CMAP[b.dataset.c].name; };
+  b.onmouseleave = () => { $('condName').textContent = ''; };
+  b.onclick = () => {
+    if (busy()) return; const id = b.dataset.c;
+    if (set.mode === 'manual') set.mCond = id;
+    else { const s = new Set(set.conds); s.has(id) ? s.delete(id) : s.add(id); if (!s.size) return; set.conds = CONDS.map(c => c.id).filter(x => s.has(x)); plan = null; }
+    save(); sync(); render();
+  };
 });
 ANGLES.forEach(a => { const b = document.createElement('button'); b.className = 'chip'; b.dataset.a = a; b.textContent = a + '°';
   b.onclick = () => { if (busy()) return;
@@ -202,25 +175,21 @@ ANGLES.forEach(a => { const b = document.createElement('button'); b.className = 
   $('angChips').appendChild(b); });
 $('mode').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mode = b.dataset.v; save(); sync(); render(); });
 $('toolSeg').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mTool = b.dataset.v; save(); sync(); render(); });
-$('reps').oninput = () => { set.reps = clamp(Number($('reps').value) || 1, 1, 5); plan = null; save(); sync(); render(); };
 $('restart').onclick = () => { if (busy()) return; plan = null; save(); sync(); render(); };
-$('regP').onclick = () => { if (busy()) return; reg = null; learned = null; save(); sync(); render(); };
+$('redo').onclick = () => { if (busy()) return; reg = null; learned = null; save(); $('res').hidden = true; state = 'idle'; sync(); render(); };
 $('vol').oninput = () => { if (master) master.gain.value = Number($('vol').value); };
-$('clearAll').onclick = () => { if (busy()) return; if (confirm('今までの結果を消しますか？')) { history = []; save(); renderHeat(); } };
-document.querySelectorAll('[data-real]').forEach(b => b.onclick = () => { if (plan) { plan.real = Number(b.dataset.real); save(); $('realAns').textContent = `回答：${plan.real}つ（本当は1つ）`; } });
+$('sumBtn').onclick = () => { renderHeat(); $('sumDlg').showModal(); };
+$('sumClose').onclick = () => $('sumDlg').close();
+$('clearAll').onclick = () => { if (confirm('結果を消しますか？')) { history = []; save(); renderHeat(); } };
+document.querySelectorAll('[data-real]').forEach(b => b.onclick = () => { if (plan) { plan.real = Number(b.dataset.real); save(); $('realAns').textContent = `→ 本当は1つ`; } });
 
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function makePlan() {
-  const blocks = shuffle([...set.angles]).map(ang => {
-    const trials = [];
-    for (let r = 0; r < set.reps; r++) for (const cond of set.conds) for (const tool of ['A', 'M', 'B']) trials.push({ cond, tool });
-    return { ang, trials: shuffle(trials) };
-  });
+  const blocks = shuffle([...set.angles]).map(ang => ({ ang, trials: shuffle(set.conds.flatMap(cond => ['A', 'M', 'B'].map(tool => ({ cond, tool })))) }));
   return { blocks, b: 0, i: 0, real: null };
 }
 const planDone = () => plan && plan.b >= plan.blocks.length;
-function planCount() { if (!plan) return [0, 0]; let done = 0, all = 0; plan.blocks.forEach((bl, k) => { all += bl.trials.length; if (k < plan.b) done += bl.trials.length; else if (k === plan.b) done += plan.i; }); return [done, all]; }
-// 次の1回（手動のランダムは開始時に決める）
+function planCount() { let d = 0, n = 0; plan.blocks.forEach((bl, k) => { n += bl.trials.length; if (k < plan.b) d += bl.trials.length; else if (k === plan.b) d += plan.i; }); return [d, n]; }
 function nextSpec() {
   if (set.mode === 'manual') return { ang: set.mAng, cond: set.mCond, tool: set.mTool };
   if (!plan) plan = makePlan();
@@ -228,24 +197,17 @@ function nextSpec() {
   const bl = plan.blocks[plan.b]; return { ang: bl.ang, ...bl.trials[plan.i] };
 }
 function sync() {
-  $('pSt').textContent = reg ? '記録済み' : '未記録'; $('pSt').className = 'st ' + (reg ? 'ok' : 'ng');
-  $('regP').hidden = !reg;
-  if (reg) { const ph = Math.atan2(reg.Pc.x, reg.Pc.y) * 180 / Math.PI;
-    $('pInfo').textContent = `Pは正面から${Math.abs(ph).toFixed(0)}°${ph > 0.5 ? '右' : ph < -0.5 ? '左' : ''}。なぞった長さを約${ARM_CM}cmとして扱います。道具はPと同じ距離の弧に、A（左）・M（Pと同じ場所）・B（右）と並べます。`; }
-  else $('pInfo').textContent = '机にスタート印と本物の物を置いてください。右の図をクリックすると、最初にPを記録します。';
   const auto = set.mode === 'auto';
   $('mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === set.mode)));
   $('autoBox').hidden = !auto; $('manualBox').hidden = auto;
-  $('condLbl').textContent = auto ? '音の条件（使うものを全部選ぶ）' : '音の条件（1つ選ぶ）';
-  $('angLbl').textContent = auto ? '道具どうしの間隔（使う角度を全部選ぶ）' : '道具どうしの間隔（1つ選ぶ）';
+  $('condLbl').textContent = auto ? '音の条件（使うもの全部）' : '音の条件（1つ）';
+  $('angLbl').textContent = auto ? '道具の間隔（使うもの全部）' : '道具の間隔（1つ）';
   ctab.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(auto ? set.conds.includes(b.dataset.c) : set.mCond === b.dataset.c)));
   $('angChips').querySelectorAll('.chip').forEach(b => { const a = Number(b.dataset.a); b.setAttribute('aria-pressed', String(auto ? set.angles.includes(a) : set.mAng === a)); });
   $('toolSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === set.mTool)));
-  $('reps').value = set.reps;
   if (auto && !plan) { plan = makePlan(); save(); }
-  if (plan) { const [d, n] = planCount(); $('progBar').style.width = (d / n * 100) + '%';
-    $('progTxt').textContent = planDone() ? `全${n}回 終わりました` : `${d} / ${n} 回 ・ 間隔 ${plan.b + 1}/${plan.blocks.length}（${plan.blocks[plan.b].ang}°）`; }
-  $('side').classList.toggle('lockedui', busy());
+  if (plan) { const [d, n] = planCount(); $('progBar').style.width = (d / n * 100) + '%'; $('progTxt').textContent = planDone() ? `${n}回 終了` : `${d} / ${n}回（間隔 ${plan.blocks[plan.b].ang}°）`; }
+  $('side').classList.toggle('off', busy());
 }
 
 // ===== 音 =====
@@ -262,85 +224,82 @@ function ensureAudio() {
   burst = ac.createBuffer(1, n, sr); const d = burst.getChannelData(0);
   for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.min(1, i / f, (n - 1 - i) / f) * 0.5;
 }
-const HEAD_BEHIND = 20, EAR_ABOVE = 30; // 耳はスタート印の20cm後ろ・30cm上と仮定
-function setSource(p) {
-  const x = p.x / 100, y = -EAR_ABOVE / 100, z = -(p.y + HEAD_BEHIND) / 100, t = ac.currentTime;
+const HEAD_BEHIND = 20, EAR_ABOVE = 30; // 耳はスタート印の20cm後ろ・30cm上と仮定（cm）
+function setSource(p) { // p は「スタート→P = 1」の単位
+  const x = p.x * ARM_CM / 100, y = -EAR_ABOVE / 100, z = -(p.y * ARM_CM + HEAD_BEHIND) / 100, t = ac.currentTime;
   if (panner.positionX) { panner.positionX.setTargetAtTime(x, t, 0.01); panner.positionY.setTargetAtTime(y, t, 0.01); panner.positionZ.setTargetAtTime(z, t, 0.01); }
   else panner.setPosition(x, y, z);
 }
 function pulse(t, gain, dest) { const s = ac.createBufferSource(); s.buffer = burst; const g = ac.createGain(); g.gain.value = gain; s.connect(g); g.connect(dest); s.start(t); }
-function beep(f = 1000) { const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime; o.frequency.value = f;
+function beep() { const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime; o.frequency.value = 1000;
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.12); }
 function testSide(s) { ensureAudio(); const p = ac.createStereoPanner(); p.pan.value = s; p.connect(master); for (let i = 0; i < 3; i++) pulse(ac.currentTime + i * 0.25, 0.8, p); }
 $('tl').onclick = () => testSide(-1); $('tr').onclick = () => testSide(1);
 function speak(text, done) {
   let fired = false; const go = () => { if (!fired) { fired = true; done(); } };
-  try {
-    const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 1.1;
+  try { const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 1.1;
     const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('ja')); if (v) u.voice = v;
-    u.onend = go; u.onerror = go; speechSynthesis.cancel(); speechSynthesis.speak(u);
-  } catch {}
+    u.onend = go; u.onerror = go; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch {}
   later(go, 2500);
 }
-
 let schedTimer = null, nextT = 0;
 function startLoop() {
   stopLoop(); nextT = ac.currentTime + 0.03;
-  const tick = () => {
-    const st = soundNow(); if (!st) return;
-    setSource(st.pos);
+  const tick = () => { const st = soundNow(); if (!st) return; setSource(st.pos);
     while (nextT < ac.currentTime + 0.08) { pulse(nextT, st.gain, panner); nextT += st.interval; }
-    schedTimer = setTimeout(tick, 20);
-  };
+    schedTimer = setTimeout(tick, 20); };
   tick();
 }
 function stopLoop() { clearTimeout(schedTimer); schedTimer = null; }
-// 鳴る場所：取る道具の場所T・本物P・ワーピング（手の進み具合でT→P）
+// 鳴る場所：取る道具T・本物P・ワーピング（手の進み具合でT→P）
 function srcPos() {
   const c = CMAP[trial.cond], { T, P } = trial;
   if (c.loc === 'T') return T;
   if (c.loc === 'P') return P;
-  if (c.loc === 'W') { const q = clamp(Math.hypot(hand.x, hand.y) / Math.hypot(P.x, P.y), 0, 1), s = q * q * (3 - 2 * q); return { x: T.x + (P.x - T.x) * s, y: T.y + (P.y - T.y) * s }; }
+  if (c.loc === 'W') { const q = clamp(Math.hypot(hand.x, hand.y), 0, 1), s = q * q * (3 - 2 * q); return { x: T.x + (P.x - T.x) * s, y: T.y + (P.y - T.y) * s }; }
   return null;
 }
-// 鳴り方：鳴りっぱなし（一定）・バックセンサー（手が鳴る場所に近いほど速く大きく）
+// 鳴り方：鳴りっぱなし（一定）・バックセンサー（鳴る場所に近いほど速く大きく）
 function soundNow() {
   if (!trial || state !== 'reach') return null;
   const c = CMAP[trial.cond]; if (!c.loc) return null;
   const pos = srcPos();
   if (c.type === 'c') return { pos, interval: 0.35, gain: 0.8 };
-  const d = Math.hypot(hand.x - pos.x, hand.y - pos.y), k = clamp(1 - d / (0.7 * ARM_CM), 0, 1);
+  const k = clamp(1 - Math.hypot(hand.x - pos.x, hand.y - pos.y) / 0.7, 0, 1);
   return { pos, interval: 0.6 - 0.5 * k, gain: 0.3 + 0.7 * k };
 }
 
 // ===== 状態とマウス =====
-// 固定なし：idle / result / done（左のパネルを触れる）
-// 固定中　：reg0→reg1（Pをなぞる）→ learnS→learnGo⇄learnBack（覚える）→ atStart → instruct → reach → answer
+// 位置は「スタート→本物P の距離 = 1」の単位。P は常にまっすぐ前 (0, 1)。
+// 固定なし：idle / result / done
+// 固定中　：cal0（スタートでクリック）→ cal1（まっすぐ前のPでクリック）→ learnS → learnGo ⇄ learnBack → atStart → instruct → reach → answer
 const cv = $('cv'), ctx = cv.getContext('2d');
-let state = 'idle', trial = null, last = null, hand = { x: 0, y: 0 }, regRaw = { x: 0, y: 0 }, regPath = [], timers = [], note = '';
-let learnSeq = [], learnK = 0, learnAng = null;
-const LOCKED_STATES = ['reg0', 'reg1', 'learnS', 'learnGo', 'learnBack', 'atStart', 'instruct', 'reach', 'answer'];
-const busy = () => LOCKED_STATES.includes(state);
+let state = 'idle', trial = null, last = null, hand = { x: 0, y: 0 }, raw = { x: 0, y: 0 }, trail = [], timers = [], note = '';
+let learnSeq = [], learnK = 0, learnAng = null, accel = false, handKnown = false;
+const LOCKED = ['cal0', 'cal1', 'learnS', 'learnGo', 'learnBack', 'atStart', 'instruct', 'reach', 'answer'];
+const busy = () => LOCKED.includes(state);
 const locked = () => document.pointerLockElement === cv;
-const cmPerCount = () => reg ? ARM_CM / Math.hypot(reg.Pc.x, reg.Pc.y) : 0.03;
-const rot = (p, d) => { const r = d * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return { x: p.x * c + p.y * s, y: -p.x * s + p.y * c }; }; // 上から見て右回りが＋
-function geom(ang) { const k = cmPerCount(), P = { x: reg.Pc.x * k, y: reg.Pc.y * k };
-  return { P, A: rot(P, -ang), M: { ...P }, B: rot(P, ang) }; }
-function touchR(ang) { return Math.min(3.5, 0.45 * 2 * ARM_CM * Math.sin(ang * Math.PI / 360)); }
+const P0 = { x: 0, y: 1 };
+const rot = (p, d) => { const r = d * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return { x: p.x * c + p.y * s, y: -p.x * s + p.y * c }; };
+const geom = ang => ({ P: P0, A: rot(P0, -ang), M: { ...P0 }, B: rot(P0, ang) });
+const touchR = ang => Math.min(0.08, 0.9 * Math.sin(ang * Math.PI / 360)); // 道具の半径（隣とぶつからない大きさ）
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 function later(f, ms) { timers.push(setTimeout(f, ms)); }
 function lock() { ensureAudio();
-  try { const r = cv.requestPointerLock({ unadjustedMovement: true }); if (r && r.catch) r.catch(() => { try { cv.requestPointerLock(); } catch {} }); } catch { cv.requestPointerLock(); } }
+  try { const r = cv.requestPointerLock({ unadjustedMovement: true });
+    if (r && r.catch) r.catch(() => { accel = true; try { cv.requestPointerLock(); } catch {} }); }
+  catch { accel = true; cv.requestPointerLock(); } }
 function unlock() { if (document.pointerLockElement) document.exitPointerLock(); }
 
 let lockedAt = 0;
-document.addEventListener('pointerlockerror', () => { note = 'マウスを固定できませんでした。1秒待ってもう一度クリックしてください'; render(); });
+document.addEventListener('pointerlockerror', () => { note = '固定できませんでした。1秒待ってもう一度クリック'; render(); });
 document.addEventListener('pointerlockchange', () => {
   if (locked()) {
-    lockedAt = performance.now(); note = '';
-    if (!reg) state = 'reg0';
+    lockedAt = performance.now(); note = ''; raw = { x: 0, y: 0 }; trail = []; handKnown = false;
+    $('warn').textContent = accel ? '⚠ マウス加速が切れていません（距離がずれます）' : '';
+    if (!reg) state = 'cal0';
     else { const sp = nextSpec(); if (!sp) { unlock(); return; } learnAng = sp.ang; state = learned === sp.ang ? 'atStart' : 'learnS'; }
-  } else if (busy()) { stopLoop(); clearTimers(); trial = null; state = 'idle'; note = '止めました。もう一度クリックで再開'; }
+  } else if (busy()) { stopLoop(); clearTimers(); trial = null; state = 'idle'; note = ''; }
   sync(); render();
 });
 cv.addEventListener('click', () => { if (!locked() && !busy() && state !== 'done') lock(); });
@@ -349,44 +308,39 @@ document.addEventListener('contextmenu', e => { if (locked()) e.preventDefault()
 
 document.addEventListener('mousemove', e => {
   if (!locked()) return;
-  if (state === 'reg1') { regRaw.x += e.movementX; regRaw.y -= e.movementY; regPath.push({ ...regRaw }); draw(); return; }
-  const k = cmPerCount();
-  if (state === 'learnGo' || state === 'learnBack') {
-    hand.x += e.movementX * k; hand.y -= e.movementY * k;
-    const g = geom(learnAng);
-    if (state === 'learnGo') { const id = learnSeq[learnK], p = g[id];
-      if (Math.hypot(hand.x - p.x, hand.y - p.y) < touchR(learnAng)) { setSource(p); for (let i = 0; i < 2; i++) pulse(ac.currentTime + i * 0.18, 0.8, panner); state = 'learnBack'; render(); return; } }
-    else if (Math.hypot(hand.x, hand.y) < 5) { learnK++; if (learnK >= learnSeq.length) { learned = learnAng; save(); state = 'atStart'; note = '覚えました'; } else state = 'learnGo'; render(); return; }
-    draw(); return;
-  }
-  if (state === 'reach') { hand.x += e.movementX * k; hand.y -= e.movementY * k; trial.path.push({ ...hand }); const s = srcPos(); if (s) trial.src.push({ ...s }); }
+  raw.x += e.movementX; raw.y -= e.movementY;
+  if (state === 'cal1') { trail.push({ ...raw }); draw(); return; }
+  if (!reg) return;
+  const k = 1 / reg.d; hand.x += e.movementX * k; hand.y -= e.movementY * k;
+  if (state === 'learnGo') { const id = learnSeq[learnK], p = geom(learnAng)[id];
+    if (Math.hypot(hand.x - p.x, hand.y - p.y) < touchR(learnAng)) { setSource(p); for (let i = 0; i < 2; i++) pulse(ac.currentTime + i * 0.18, 0.8, panner); state = 'learnBack'; render(); return; } }
+  else if (state === 'learnBack' && Math.hypot(hand.x, hand.y) < 0.08) { learnK++; if (learnK >= learnSeq.length) { learned = learnAng; save(); state = 'atStart'; } else state = 'learnGo'; render(); return; }
+  else if (state === 'reach') { trial.path.push({ ...hand }); const s = srcPos(); if (s) trial.src.push({ ...s }); return; }
+  draw();
 });
 document.addEventListener('mousedown', e => {
-  if (!locked() || performance.now() - lockedAt < 200) return; // 固定したときのクリックは無視
-  const cancelable = ['reg0', 'learnS', 'learnGo', 'learnBack', 'atStart'];
-  if (e.button === 2 && cancelable.includes(state)) { state = 'idle'; note = ''; unlock(); return; }
-  if (state === 'reg0' && e.button === 0) { state = 'reg1'; regRaw = { x: 0, y: 0 }; regPath = [{ x: 0, y: 0 }]; render(); return; }
-  if (state === 'learnS' && e.button === 0) { hand = { x: 0, y: 0 }; learnSeq = ['A', 'M', 'B', 'A', 'M', 'B']; learnK = 0; state = 'learnGo'; render(); return; }
-  if (state === 'atStart' && e.button === 0) { startTrial(); return; }
+  if (!locked() || performance.now() - lockedAt < 200) return;
+  if (e.button === 2 && ['cal0', 'cal1', 'learnS', 'learnGo', 'learnBack', 'atStart'].includes(state)) { state = 'idle'; unlock(); return; }
+  if (e.button === 0 && state === 'cal0') { raw = { x: 0, y: 0 }; trail = [{ x: 0, y: 0 }]; state = 'cal1'; render(); return; }
+  if (e.button === 0 && state === 'cal1') {
+    const d = Math.hypot(raw.x, raw.y), dev = Math.atan2(raw.x, raw.y) * 180 / Math.PI;
+    if (d < 50) { note = '短すぎます'; render(); return; }
+    if (Math.abs(dev) > 12) { note = `まっすぐ前に動かしてください（${dev > 0 ? '右' : '左'}に${Math.abs(dev).toFixed(0)}°ずれた）`; state = 'cal0'; render(); return; }
+    reg = { d }; learned = null; save(); hand = { x: raw.x / d, y: raw.y / d }; handKnown = true;
+    const sp = nextSpec(); learnAng = sp ? sp.ang : set.mAng; state = 'learnS'; note = ''; sync(); render(); return;
+  }
+  if (e.button === 0 && state === 'learnS') { hand = { x: 0, y: 0 }; handKnown = true; learnSeq = ['A', 'M', 'B', 'A', 'M', 'B']; learnK = 0; state = 'learnGo'; render(); return; }
+  if (e.button === 0 && state === 'atStart') { startTrial(); return; }
   if (state === 'reach') { endReach(); return; }
   if (state === 'answer') { answer(e.button === 0 ? 'yes' : e.button === 2 ? 'no' : 'unsure'); return; }
 });
-document.addEventListener('mouseup', () => {
-  if (state !== 'reg1') return;
-  if (Math.hypot(regRaw.x, regRaw.y) < 30) { state = 'reg0'; note = '短すぎました。もう一度なぞってください'; render(); return; }
-  reg = { Pc: { ...regRaw } }; learned = null; save();
-  const sp = nextSpec(); learnAng = sp ? sp.ang : set.mAng; state = 'learnS'; note = 'Pを記録しました'; sync(); render();
-});
-document.addEventListener('keydown', e => {
-  if (state === 'answer' && ['Digit1', 'Digit2', 'Digit3'].includes(e.code)) answer({ Digit1: 'yes', Digit2: 'no', Digit3: 'unsure' }[e.code]);
-});
+document.addEventListener('keydown', e => { if (state === 'answer' && e.code === 'Digit3') answer('unsure'); });
 
 function startTrial() {
   const sp = nextSpec(); if (!sp) return;
-  ensureAudio(); clearTimers(); note = '';
-  const tool = sp.tool === 'rand' ? ['A', 'M', 'B'][Math.floor(Math.random() * 3)] : sp.tool;
-  const g = geom(sp.ang);
-  trial = { cond: sp.cond, ang: sp.ang, tool, P: g.P, T: g[tool], tools: g, path: [{ x: 0, y: 0 }], src: [] };
+  ensureAudio(); clearTimers();
+  const tool = sp.tool === 'rand' ? ['A', 'M', 'B'][Math.floor(Math.random() * 3)] : sp.tool, g = geom(sp.ang);
+  trial = { cond: sp.cond, ang: sp.ang, tool, P: g.P, T: g[tool], path: [{ x: 0, y: 0 }], src: [] };
   state = 'instruct'; render();
   speak(`${TOOLS[tool].name}を取って`, () => {
     if (state !== 'instruct') return;
@@ -398,33 +352,24 @@ const deg = p => Math.atan2(p.x, p.y) * 180 / Math.PI;
 function answer(v) {
   const t = trial; t.noticed = v;
   const aT = deg(t.T), aP = deg(t.P), aE = deg(t.E);
-  t.devT = aE - aT;                                       // 覚えた道具の向きからのずれ（右が+）
-  t.pull = t.tool === 'M' ? null : (aE - aT) / (aP - aT); // 0=道具の場所, 1=本物P
-  t.distP = Math.hypot(t.E.x - t.P.x, t.E.y - t.P.y);
-  history.push({ cond: t.cond, ang: t.ang, tool: t.tool, pull: t.pull, devT: t.devT, distP: t.distP, noticed: v, ms: Math.round(t.ms), mode: set.mode, time: Date.now() });
+  t.devT = aE - aT; t.pull = t.tool === 'M' ? null : (aE - aT) / (aP - aT);
+  history.push({ cond: t.cond, ang: t.ang, tool: t.tool, pull: t.pull, devT: t.devT, reach: Math.hypot(t.E.x, t.E.y), noticed: v, ms: Math.round(t.ms), mode: set.mode, time: Date.now() });
   if (set.mode === 'auto' && plan) { plan.i++; if (plan.i >= plan.blocks[plan.b].trials.length) { plan.b++; plan.i = 0; } }
   last = t; trial = null; state = planDone() && set.mode === 'auto' ? 'done' : 'result';
-  save(); showResult(); renderHeat(); unlock(); sync(); render();
+  save(); showResult(); unlock(); sync(); render();
 }
 
 // ===== 結果 =====
 function showResult() {
-  const t = last, c = CMAP[t.cond], tl = TOOLS[t.tool], ans = { yes: 'ずれていた', no: 'ずれていなかった', unsure: 'わからない' }[t.noticed];
-  $('rPull').innerHTML = t.pull === null ? `${Math.abs(t.devT).toFixed(1)}°<small>真ん中Mからのずれ（ずらしなし）</small>` : `${Math.round(t.pull * 100)}%<small>本物Pへ引っぱられた</small>`;
-  const verdict = t.pull === null ? '<li>真ん中Mは本物Pと同じ場所なので、比較用の回</li>'
-    : t.pull >= 0.7 && t.noticed === 'no' ? '<li><b style="color:var(--p)">気づかないまま本物Pへ誘導された</b></li>'
-    : t.pull >= 0.7 ? '<li>本物Pへ誘導されたが、ずれに気づいた</li>' : t.pull >= 0.3 ? '<li>途中まで引っぱられた</li>' : '<li>ほぼ覚えた道具の場所へ行った</li>';
-  $('rList').innerHTML = `<li>取った道具：<b>${t.tool} ${tl.name}（${tl.pos}）</b>、間隔 <b>${t.ang}°</b></li>` +
-    `<li>音：<b>${c.name}</b></li>` +
-    `<li>止めた向き：覚えた場所から <b>${t.devT >= 0 ? '右へ' : '左へ'}${Math.abs(t.devT).toFixed(1)}°</b>、本物Pから <b>${t.distP.toFixed(1)} cm</b></li>` +
-    `<li>ずれを：<b>${ans}</b>（${(t.ms / 1000).toFixed(1)}秒）</li>` + verdict;
-  $('resCard').hidden = false;
-  $('finalBox').hidden = state !== 'done';
-  if (state === 'done') $('realAns').textContent = plan && plan.real ? `回答：${plan.real}つ（本当は1つ）` : '';
+  const t = last, tl = TOOLS[t.tool], ans = { yes: 'ずれていた', no: 'ずれていない', unsure: 'わからない' }[t.noticed];
+  $('rBig').innerHTML = t.pull === null ? `${Math.abs(t.devT).toFixed(0)}°<small>ずれ（真ん中＝本物）</small>` : `${Math.round(t.pull * 100)}%<small>本物Pへ引っぱられた</small>`;
+  $('rTxt').innerHTML = `${tl.name}（${tl.pos}） ／ ${t.ang}° ／ ${CMAP[t.cond].name}<br>答え：<b>${ans}</b>` +
+    (t.pull !== null && t.pull >= 0.7 && t.noticed === 'no' ? '　<b style="color:var(--p)">→ 気づかず本物へ</b>' : '');
+  $('res').hidden = false; $('finalBox').hidden = state !== 'done';
 }
 function renderHeat() {
   const el = $('heat');
-  if (!history.length) { el.innerHTML = '<tr><td class="muted" style="text-align:left">まだありません</td></tr>'; return; }
+  if (!history.length) { el.innerHTML = '<tr><td class="muted">まだありません</td></tr>'; return; }
   const angs = [...new Set(history.map(h => h.ang))].sort((a, b) => a - b);
   const cell = (h, isM) => {
     if (!h.length) return '<td style="background:#f8fafc;color:#cbd5e1">—</td>';
@@ -433,43 +378,39 @@ function renderHeat() {
     const m = h.reduce((s, r) => s + r.pull, 0) / h.length, k = clamp(m, 0, 1);
     return `<td style="background:rgba(79,70,229,${0.08 + 0.8 * k});color:${k > 0.55 ? '#fff' : 'inherit'}"><b>${Math.round(m * 100)}%</b>${sub}</td>`;
   };
-  let html = '<tr><th>音の条件</th>' + angs.map(a => `<th>A・B ${a}°</th>`).join('') + '<th>真ん中M</th></tr>';
-  for (const c of CONDS) {
-    const hc = history.filter(r => r.cond === c.id);
-    html += `<tr><th>${c.mark ? c.mark + ' ' : ''}${c.name}</th>` + angs.map(a => cell(hc.filter(r => r.ang === a && r.tool !== 'M'), false)).join('') + cell(hc.filter(r => r.tool === 'M'), true) + '</tr>';
-  }
-  el.innerHTML = html;
+  el.innerHTML = '<tr><th></th>' + angs.map(a => `<th>左右 ${a}°</th>`).join('') + '<th>真ん中</th></tr>' +
+    CONDS.map(c => { const hc = history.filter(r => r.cond === c.id);
+      return `<tr><th>${c.mark} ${c.name}</th>` + angs.map(a => cell(hc.filter(r => r.ang === a && r.tool !== 'M'), false)).join('') + cell(hc.filter(r => r.tool === 'M'), true) + '</tr>'; }).join('');
 }
 
 // ===== 表示 =====
-const STEP = { learnS: 0, learnGo: 0, learnBack: 0, atStart: 1, instruct: 2, reach: 3, answer: 4, result: 5, done: 5 };
-function specText(sp) { if (!sp) return ''; const tool = sp.tool === 'rand' ? 'ランダム' : `${sp.tool} ${TOOLS[sp.tool].name}`; return `間隔 ${sp.ang}° ／ ${CMAP[sp.cond].name} ／ 取る道具：${tool}`; }
+const STEP = { cal0: 0, cal1: 0, learnS: 1, learnGo: 1, learnBack: 1, atStart: 2, instruct: 2, reach: 3, answer: 4 };
+function specText(sp) { return sp ? `${sp.ang}° ／ ${CMAP[sp.cond].name} ／ ${sp.tool === 'rand' ? '🎲' : TOOLS[sp.tool].name}` : ''; }
 function render() {
   const i = STEP[state] ?? -1;
   $('steps').querySelectorAll('span:not(.info)').forEach((s, k) => s.className = k === i ? 'now' : '');
   const sp = nextSpec();
-  $('trialInfo').textContent = trial ? `今：${specText({ ...trial })}` : sp ? `次：${specText(sp)}` : '';
+  $('trialInfo').textContent = trial ? '' : sp ? `次：${specText(sp)}` : '';
   const bn = $('banner'), B = $('bBig'), S = $('bSmall');
   bn.classList.toggle('dark', ['instruct', 'reach', 'answer'].includes(state));
-  let big = '', small = note;
-  const needLearn = reg && sp && learned !== sp.ang;
+  let big = '', small = '';
   if (state === 'idle' || state === 'result') {
-    big = !reg ? 'ここをクリックして、まず本物Pを記録' : !sp ? '全部終わりました' : needLearn ? `ここをクリックして、道具の場所を覚える（間隔 ${sp.ang}°）` : state === 'result' ? 'ここをクリックで次の1回へ' : 'ここをクリックして始める';
-    small = note || (sp ? `次：${specText(sp)}` : '') + '　（マウスが固定されます。右クリックで戻れます）';
+    big = !reg ? 'クリックして準備' : !sp ? '終了' : learned !== sp.ang ? `クリックして道具を覚える（${sp.ang}°）` : state === 'result' ? 'クリックで次へ' : 'クリックで開始';
+    small = !reg ? '机にスタート印と、その真正面に本物を置く' : '';
   }
-  else if (state === 'done') { big = '全部終わりました'; small = '下で「本物はいくつ？」に答えてください'; }
-  else if (state === 'reg0') { big = 'スタート印にマウスを置き、押したまま本物Pまでなぞって離す'; small = note || '右クリックで戻る'; }
-  else if (state === 'reg1') { big = '本物Pまでなぞって、離す'; small = ''; }
-  else if (state === 'learnS') { big = '道具の場所を覚える：スタート印にマウスを置いてクリック'; small = (note ? note + '　' : '') + `目を開けて画面を見ながら、A・M・Bに2回ずつ触れます（間隔 ${learnAng}°）`; }
-  else if (state === 'learnGo') { const id = learnSeq[learnK]; big = `${id} ${TOOLS[id].name}（${TOOLS[id].pos}）に触れる`; small = `${learnK + 1} / ${learnSeq.length}　画面の青い点が手の位置`; }
-  else if (state === 'learnBack') { big = 'スタート印に戻す'; small = `${learnK + 1} / ${learnSeq.length}`; }
-  else if (state === 'atStart') { big = 'スタート印にマウスを置いてクリック'; small = (note ? note + '　' : '') + '声で取る道具を言います → 目を閉じたまま手を伸ばす（右クリックで戻る）'; }
-  else if (state === 'instruct') { big = '目を閉じて、声を聞く'; small = ''; }
-  else if (state === 'reach') { big = '手を伸ばす'; small = '触れたら（止めたら）クリック'; }
-  else if (state === 'answer') { big = '覚えていた場所とずれていた？'; small = '左クリック＝ずれていた　／　右クリック＝ずれていなかった　／　3キー＝わからない'; }
+  else if (state === 'done') big = '終了';
+  else if (state === 'cal0') { big = 'スタート印でクリック'; small = note || '右クリック：やめる'; }
+  else if (state === 'cal1') { big = 'まっすぐ前の本物までずらしてクリック'; small = note; }
+  else if (state === 'learnS') { big = 'スタート印でクリック'; small = '目を開けたまま、赤・青・黄に触れて覚える'; }
+  else if (state === 'learnGo') { const id = learnSeq[learnK]; big = `${TOOLS[id].name}（${TOOLS[id].pos}）に触れる`; small = `${learnK + 1} / ${learnSeq.length}`; }
+  else if (state === 'learnBack') { big = 'スタートへ戻す'; small = `${learnK + 1} / ${learnSeq.length}`; }
+  else if (state === 'atStart') { big = 'スタート印でクリック'; small = '声 → 目を閉じて手を伸ばす'; }
+  else if (state === 'instruct') big = '目を閉じて';
+  else if (state === 'reach') { big = '手を伸ばす'; small = '触れたらクリック'; }
+  else if (state === 'answer') { big = 'ずれていた？'; small = '左クリック：はい　右クリック：いいえ'; }
   B.textContent = big; S.textContent = small; B.hidden = !big; S.hidden = !small;
-  if (busy()) $('resCard').hidden = true;
-  $('side').classList.toggle('lockedui', busy());
+  if (busy()) $('res').hidden = true;
+  $('side').classList.toggle('off', busy());
   draw();
 }
 
@@ -479,40 +420,41 @@ function draw() {
   const W = cv.clientWidth, H = cv.clientHeight; if (!W) return;
   ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
   if (['instruct', 'reach', 'answer'].includes(state)) return;
-  const k = cmPerCount(), R = ARM_CM;
-  const ext = state === 'reg1' ? Math.max(R, Math.hypot(regRaw.x, regRaw.y) * k) : R;
-  const sc = Math.max(0.5, Math.min((H - 120) / (ext * 1.12), (W - 40) / (ext * 2.1)));
-  const ox = W / 2, oy = H - 34, pt = p => [ox + p.x * sc, oy - p.y * sc];
-  ctx.lineWidth = 1; ctx.font = '11px system-ui'; ctx.fillStyle = '#9ca3af'; ctx.textAlign = 'left';
-  for (let r = 10; r <= ext * 1.15; r += 10) { ctx.strokeStyle = '#f1f5f9'; ctx.beginPath(); ctx.arc(ox, oy, r * sc, Math.PI, 2 * Math.PI); ctx.stroke(); ctx.fillText(r + 'cm', ox + r * sc + 3, oy - 3); }
-  ctx.strokeStyle = '#e5e7eb'; ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke();
-  const ring = (p, color, r, label, fill) => { const [x, y] = pt(p); ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
-    if (fill) { ctx.fillStyle = color; ctx.fill(); } ctx.lineWidth = 3; ctx.strokeStyle = color; ctx.stroke();
-    if (label) { ctx.fillStyle = color; ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - r - 7); } };
-  const dot = (p, color, r, label) => { const [x, y] = pt(p); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = color; ctx.fill();
-    if (label) { ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y + r + 15); } };
-  const line = (pts, color, w, dash) => { if (pts.length < 2) return; ctx.setLineDash(dash || []); ctx.lineWidth = w; ctx.strokeStyle = color; ctx.beginPath(); pts.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); };
-  const square = (p, label) => { const [x, y] = pt(p); ctx.fillStyle = '#10b981'; ctx.fillRect(x - 8, y - 8, 16, 16); if (label) { ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y + 24); } };
-  dot({ x: 0, y: 0 }, '#111827', 6, 'スタート');
-  if (state === 'reg1') { line(regPath.map(p => ({ x: p.x * k, y: p.y * k })), '#94a3b8', 2); const c = regPath[regPath.length - 1]; dot({ x: c.x * k, y: c.y * k }, '#10b981', 7); return; }
+  const ox = W / 2, oy = H - 30;
+  // cal1：マウスの生の移動量を、画面に収まるように表示
+  if (state === 'cal0' || state === 'cal1') {
+    const ext = Math.max(400, ...trail.map(p => Math.hypot(p.x, p.y) * 1.15));
+    const sc = Math.min((H - 110) / ext, (W / 2 - 30) / ext), pt = p => [ox + p.x * sc, oy - p.y * sc];
+    ctx.setLineDash([6, 6]); ctx.strokeStyle = '#a7f3d0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, 60); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#10b981'; ctx.font = '700 12px system-ui'; ctx.textAlign = 'left'; ctx.fillText('まっすぐ前', ox + 8, 110);
+    if (trail.length > 1) { ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.beginPath(); trail.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); }
+    dotAt(ox, oy, '#111827', 6, 'スタート');
+    { const [x, y] = pt(raw); dotAt(x, y, '#2563eb', 8); }
+    return;
+  }
+  const sc = Math.max(10, Math.min((H - 110) / 1.12, (W - 40) / 2.1)), pt = p => [ox + p.x * sc, oy - p.y * sc];
+  ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1;
+  [0.25, 0.5, 0.75, 1].forEach(r => { ctx.beginPath(); ctx.arc(ox, oy, r * sc, Math.PI, 2 * Math.PI); ctx.stroke(); });
+  dotAt(ox, oy, '#111827', 6, 'スタート');
   if (!reg) return;
-  const learning = ['learnS', 'learnGo', 'learnBack'].includes(state);
-  const sp = nextSpec();
+  const learning = ['learnS', 'learnGo', 'learnBack'].includes(state), sp = nextSpec();
   const ang = learning ? learnAng : (state === 'result' || state === 'done') && last ? last.ang : sp ? sp.ang : set.mAng;
-  const g = geom(ang), r0 = Math.max(9, touchR(ang) * sc);
-  if (!learning) square(g.P, '本物P');
-  ['A', 'M', 'B'].forEach(id => { const cur = state === 'learnGo' && learnSeq[learnK] === id;
-    ring(g[id], TOOLS[id].color, cur ? r0 + 4 : r0, `${id} ${TOOLS[id].name}`, cur); });
-  if (learning && state !== 'learnS') dot(hand, '#2563eb', 6);
+  const g = geom(ang), r0 = Math.max(8, touchR(ang) * sc);
+  if (!learning) { const [x, y] = pt(g.P); ctx.fillStyle = '#10b981'; ctx.fillRect(x - 7, y - 7, 14, 14); ctx.font = '700 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText('本物', x, y + 22); }
+  ['A', 'M', 'B'].forEach(id => { const cur = state === 'learnGo' && learnSeq[learnK] === id, [x, y] = pt(g[id]);
+    ctx.beginPath(); ctx.arc(x, y, cur ? r0 + 4 : r0, 0, 7); if (cur) { ctx.fillStyle = TOOLS[id].color + '55'; ctx.fill(); }
+    ctx.lineWidth = 3; ctx.strokeStyle = TOOLS[id].color; ctx.stroke();
+    ctx.fillStyle = TOOLS[id].color; ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(TOOLS[id].name, x, y - r0 - 8); });
+  if ((learning || state === 'atStart') && handKnown) { const [x, y] = pt(hand); dotAt(x, y, '#2563eb', 7); }
   if ((state === 'result' || state === 'done') && last) {
-    line(last.src, '#a855f7', 3, [6, 4]);
-    line(last.path, '#111827', 2.5);
-    ring(last.T, TOOLS[last.tool].color, r0 + 6, '', false);
-    dot(last.E, '#111827', 6, '止めた位置');
+    const line = (pts, color, w, dash) => { if (pts.length < 2) return; ctx.setLineDash(dash || []); ctx.lineWidth = w; ctx.strokeStyle = color; ctx.beginPath(); pts.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); };
+    line(last.src, '#a855f7', 3, [6, 4]); line(last.path, '#111827', 2.5);
+    const [x, y] = pt(last.E); dotAt(x, y, '#111827', 6);
   }
 }
+function dotAt(x, y, color, r, label) { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = color; ctx.fill(); if (label) { ctx.font = '700 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y + r + 14); } }
 
-sync(); renderHeat(); resize(); render();
+sync(); resize(); render();
 })();
 </script>
 </body>

@@ -71,7 +71,7 @@ table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
   <button class="btn" id="tl">◀ 左</button><button class="btn" id="tr">右 ▶</button>
   <input type="range" id="vol" min="0" max="1" step="0.01" value="0.6" style="width:80px" title="音量">
   <button class="btn" id="sumBtn">まとめ</button>
-  <button class="btn" id="redo">準備し直す</button>
+  <button class="btn" id="redo">覚え直す</button>
 </header>
 
 <div class="app">
@@ -100,7 +100,7 @@ table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
   </aside>
 
   <section class="card stage">
-    <div class="steps" id="steps"><span>準備</span><span>覚える</span><span>声</span><span>伸ばす</span><span>答える</span><span class="info" id="trialInfo"></span></div>
+    <div class="steps" id="steps"><span>位置合わせ</span><span>覚える</span><span>声</span><span>伸ばす</span><span>答える</span><span class="info" id="trialInfo"></span></div>
     <canvas id="cv"></canvas>
     <div class="banner" id="banner"><big id="bBig"></big><small id="bSmall"></small></div>
     <div class="res" id="res" hidden>
@@ -115,7 +115,7 @@ table.heat{border-collapse:separate;border-spacing:3px;font-size:12px}
 <dialog id="sumDlg">
   <div class="row" style="margin-bottom:8px"><b>まとめ（本物Pへ引っぱられた割合）</b><span><button class="btn" id="clearAll">消す</button> <button class="btn pri" id="sumClose">閉じる</button></span></div>
   <table class="heat" id="heat"></table>
-  <p class="muted" style="margin:8px 0 0">0%＝覚えた道具の場所、100%＝本物P。小さい数字＝「ずれていた」／回答数。真ん中は本物と同じ場所なので角度のずれ。</p>
+  <p class="muted" style="margin:8px 0 0">0%＝覚えた道具の場所、100%＝本物P。小さい数字＝「ずれていた」／回答数。青（本物と同じ場所）は、本物からの距離（スタート→本物＝100）。途中で止めた回は入れない。</p>
 </dialog>
 
 <script>
@@ -143,11 +143,10 @@ const ANGLES = [5, 10, 15, 20, 30, 40];
 const ARM_CM = 45; // 音の距離感用：スタート→Pを約45cmとみなす
 
 let set = Object.assign({ mode: 'auto', conds: CONDS.map(c => c.id), angles: [10, 20, 30], mCond: 'W-c', mAng: 20, mTool: 'rand' }, store.get('ar4.set', {}));
-let reg = store.get('ar4.reg', null);         // { d: スタート→Pのマウス移動量 }
 let learned = store.get('ar4.learned', null);
 let plan = store.get('ar4.plan', null);
 let history = store.get('ar4.history', []);
-function save() { store.set('ar4.set', set); store.set('ar4.reg', reg); store.set('ar4.learned', learned); store.set('ar4.plan', plan); store.set('ar4.history', history); }
+function save() { store.set('ar4.set', set); store.set('ar4.learned', learned); store.set('ar4.plan', plan); store.set('ar4.history', history); }
 
 // ===== 左パネル =====
 const ctab = $('ctab');
@@ -176,7 +175,7 @@ ANGLES.forEach(a => { const b = document.createElement('button'); b.className = 
 $('mode').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mode = b.dataset.v; save(); sync(); render(); });
 $('toolSeg').querySelectorAll('button').forEach(b => b.onclick = () => { if (busy()) return; set.mTool = b.dataset.v; save(); sync(); render(); });
 $('restart').onclick = () => { if (busy()) return; plan = null; save(); sync(); render(); };
-$('redo').onclick = () => { if (busy()) return; reg = null; learned = null; save(); $('res').hidden = true; state = 'idle'; sync(); render(); };
+$('redo').onclick = () => { if (busy()) return; learned = null; save(); render(); };
 $('vol').oninput = () => { if (master) master.gain.value = Number($('vol').value); };
 $('sumBtn').onclick = () => { renderHeat(); $('sumDlg').showModal(); };
 $('sumClose').onclick = () => $('sumDlg').close();
@@ -256,7 +255,7 @@ function srcPos() {
   const c = CMAP[trial.cond], { T, P } = trial;
   if (c.loc === 'T') return T;
   if (c.loc === 'P') return P;
-  if (c.loc === 'W') { const q = clamp(Math.hypot(hand.x, hand.y), 0, 1), s = q * q * (3 - 2 * q); return { x: T.x + (P.x - T.x) * s, y: T.y + (P.y - T.y) * s }; }
+  if (c.loc === 'W') { const q = clamp(hand.y, 0, 1), s = q * q * (3 - 2 * q); return { x: T.x + (P.x - T.x) * s, y: T.y + (P.y - T.y) * s }; }
   return null;
 }
 // 鳴り方：鳴りっぱなし（一定）・バックセンサー（鳴る場所に近いほど速く大きく）
@@ -270,19 +269,31 @@ function soundNow() {
 }
 
 // ===== 状態とマウス =====
-// 位置は「スタート→本物P の距離 = 1」の単位。P は常にまっすぐ前 (0, 1)。
-// 固定なし：idle / result / done
-// 固定中　：cal0（スタートでクリック）→ cal1（まっすぐ前のPでクリック）→ learnS → learnGo ⇄ learnBack → atStart → instruct → reach → answer
+// 座標：毎回はかる「スタートS → 本物P」を基準にする。
+//   y = Pへ向かう方向（Sで0、Pで1）、x = それに直角な右方向（同じ物差し）。
+//   マウスの向きが少し回っていても、Pの方向を「前」とみなすので、ずれない。
+// 1回の流れ（固定中）：calP（本物に触れてクリック）→ calS（スタートに戻してクリック）
+//   → [覚える：learnGo ⇄ learnBack → calP に戻る] → instruct（声）→ reach → answer
 const cv = $('cv'), ctx = cv.getContext('2d');
-let state = 'idle', trial = null, last = null, hand = { x: 0, y: 0 }, raw = { x: 0, y: 0 }, trail = [], timers = [], note = '';
-let learnSeq = [], learnK = 0, learnAng = null, accel = false, handKnown = false;
-const LOCKED = ['cal0', 'cal1', 'learnS', 'learnGo', 'learnBack', 'atStart', 'instruct', 'reach', 'answer'];
+let state = 'idle', trial = null, last = null, timers = [], note = '';
+let raw = { x: 0, y: 0 }, rawP = null, frame = null, hand = { x: 0, y: 0 };
+let learnSeq = [], learnK = 0, learnAng = null, accel = false;
+const LOCKED = ['calP', 'calS', 'learnGo', 'learnBack', 'instruct', 'reach', 'answer'];
 const busy = () => LOCKED.includes(state);
 const locked = () => document.pointerLockElement === cv;
 const P0 = { x: 0, y: 1 };
 const rot = (p, d) => { const r = d * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return { x: p.x * c + p.y * s, y: -p.x * s + p.y * c }; };
-const geom = ang => ({ P: P0, A: rot(P0, -ang), M: { ...P0 }, B: rot(P0, ang) });
-const touchR = ang => Math.min(0.08, 0.9 * Math.sin(ang * Math.PI / 360)); // 道具の半径（隣とぶつからない大きさ）
+const geom = ang => ({ P: P0, A: rot(P0, -ang), M: { ...P0 }, B: rot(P0, ang) }); // 道具はSから同じ距離の弧の上。Pから左右に ang°
+const touchR = ang => Math.min(0.08, 0.9 * Math.sin(ang * Math.PI / 360));
+// マウスの生の位置 → S・P基準の座標
+function toFrame(r) {
+  const dx = r.x - frame.S.x, dy = r.y - frame.S.y;
+  return { x: (dx * frame.v.x + dy * frame.v.y) / frame.len, y: (dx * frame.u.x + dy * frame.u.y) / frame.len };
+}
+function makeFrame(S, P) {
+  const vx = P.x - S.x, vy = P.y - S.y, len = Math.hypot(vx, vy), u = { x: vx / len, y: vy / len };
+  return { S, len, u, v: { x: u.y, y: -u.x } }; // v = u を右に90°回したもの
+}
 function clearTimers() { timers.forEach(clearTimeout); timers = []; }
 function later(f, ms) { timers.push(setTimeout(f, ms)); }
 function lock() { ensureAudio();
@@ -295,10 +306,10 @@ let lockedAt = 0;
 document.addEventListener('pointerlockerror', () => { note = '固定できませんでした。1秒待ってもう一度クリック'; render(); });
 document.addEventListener('pointerlockchange', () => {
   if (locked()) {
-    lockedAt = performance.now(); note = ''; raw = { x: 0, y: 0 }; trail = []; handKnown = false;
+    lockedAt = performance.now(); raw = { x: 0, y: 0 }; rawP = null; frame = null;
     $('warn').textContent = accel ? '⚠ マウス加速が切れていません（距離がずれます）' : '';
-    if (!reg) state = 'cal0';
-    else { const sp = nextSpec(); if (!sp) { unlock(); return; } learnAng = sp.ang; state = learned === sp.ang ? 'atStart' : 'learnS'; }
+    const sp = nextSpec(); if (!sp) { unlock(); return; }
+    learnAng = sp.ang; state = 'calP'; note = '';
   } else if (busy()) { stopLoop(); clearTimers(); trial = null; state = 'idle'; note = ''; }
   sync(); render();
 });
@@ -309,28 +320,27 @@ document.addEventListener('contextmenu', e => { if (locked()) e.preventDefault()
 document.addEventListener('mousemove', e => {
   if (!locked()) return;
   raw.x += e.movementX; raw.y -= e.movementY;
-  if (state === 'cal1') { trail.push({ ...raw }); draw(); return; }
-  if (!reg) return;
-  const k = 1 / reg.d; hand.x += e.movementX * k; hand.y -= e.movementY * k;
+  if (!frame) { draw(); return; }
+  hand = toFrame(raw);
   if (state === 'learnGo') { const id = learnSeq[learnK], p = geom(learnAng)[id];
     if (Math.hypot(hand.x - p.x, hand.y - p.y) < touchR(learnAng)) { setSource(p); for (let i = 0; i < 2; i++) pulse(ac.currentTime + i * 0.18, 0.8, panner); state = 'learnBack'; render(); return; } }
-  else if (state === 'learnBack' && Math.hypot(hand.x, hand.y) < 0.08) { learnK++; if (learnK >= learnSeq.length) { learned = learnAng; save(); state = 'atStart'; } else state = 'learnGo'; render(); return; }
+  else if (state === 'learnBack' && Math.hypot(hand.x, hand.y) < 0.08) {
+    learnK++; if (learnK < learnSeq.length) { state = 'learnGo'; render(); return; }
+    learned = learnAng; save(); frame = null; rawP = null; state = 'calP'; note = '覚えました'; render(); return; }
   else if (state === 'reach') { trial.path.push({ ...hand }); const s = srcPos(); if (s) trial.src.push({ ...s }); return; }
   draw();
 });
 document.addEventListener('mousedown', e => {
   if (!locked() || performance.now() - lockedAt < 200) return;
-  if (e.button === 2 && ['cal0', 'cal1', 'learnS', 'learnGo', 'learnBack', 'atStart'].includes(state)) { state = 'idle'; unlock(); return; }
-  if (e.button === 0 && state === 'cal0') { raw = { x: 0, y: 0 }; trail = [{ x: 0, y: 0 }]; state = 'cal1'; render(); return; }
-  if (e.button === 0 && state === 'cal1') {
-    const d = Math.hypot(raw.x, raw.y), dev = Math.atan2(raw.x, raw.y) * 180 / Math.PI;
-    if (d < 50) { note = '短すぎます'; render(); return; }
-    if (Math.abs(dev) > 12) { note = `まっすぐ前に動かしてください（${dev > 0 ? '右' : '左'}に${Math.abs(dev).toFixed(0)}°ずれた）`; state = 'cal0'; render(); return; }
-    reg = { d }; learned = null; save(); hand = { x: raw.x / d, y: raw.y / d }; handKnown = true;
-    const sp = nextSpec(); learnAng = sp ? sp.ang : set.mAng; state = 'learnS'; note = ''; sync(); render(); return;
+  if (e.button === 2 && ['calP', 'calS', 'learnGo', 'learnBack'].includes(state)) { state = 'idle'; unlock(); return; }
+  if (e.button === 0 && state === 'calP') { rawP = { ...raw }; state = 'calS'; note = ''; render(); return; }
+  if (e.button === 0 && state === 'calS') {
+    const d = Math.hypot(rawP.x - raw.x, rawP.y - raw.y);
+    if (d < 50) { note = '本物とスタートが近すぎます。本物に触れるところからやり直し'; state = 'calP'; render(); return; }
+    frame = makeFrame({ ...raw }, rawP); hand = { x: 0, y: 0 }; store.set('ar5.len', d);
+    if (learned !== learnAng) { learnSeq = ['A', 'M', 'B', 'A', 'M', 'B']; learnK = 0; state = 'learnGo'; render(); return; }
+    startTrial(); return;
   }
-  if (e.button === 0 && state === 'learnS') { hand = { x: 0, y: 0 }; handKnown = true; learnSeq = ['A', 'M', 'B', 'A', 'M', 'B']; learnK = 0; state = 'learnGo'; render(); return; }
-  if (e.button === 0 && state === 'atStart') { startTrial(); return; }
   if (state === 'reach') { endReach(); return; }
   if (state === 'answer') { answer(e.button === 0 ? 'yes' : e.button === 2 ? 'no' : 'unsure'); return; }
 });
@@ -340,51 +350,61 @@ function startTrial() {
   const sp = nextSpec(); if (!sp) return;
   ensureAudio(); clearTimers();
   const tool = sp.tool === 'rand' ? ['A', 'M', 'B'][Math.floor(Math.random() * 3)] : sp.tool, g = geom(sp.ang);
-  trial = { cond: sp.cond, ang: sp.ang, tool, P: g.P, T: g[tool], path: [{ x: 0, y: 0 }], src: [] };
+  trial = { cond: sp.cond, ang: sp.ang, tool, P: g.P, T: g[tool], path: [{ ...hand }], src: [] };
   state = 'instruct'; render();
-  speak(`${TOOLS[tool].name}を取って`, () => {
+  later(() => speak(`${TOOLS[tool].name}を取って`, () => {
     if (state !== 'instruct') return;
-    hand = { x: 0, y: 0 }; trial.path = [{ x: 0, y: 0 }]; state = 'reach'; trial.t0 = performance.now(); beep(); later(startLoop, 120); render();
-  });
+    trial.start = { ...hand }; trial.path = [{ ...hand }]; state = 'reach'; trial.t0 = performance.now(); beep(); later(startLoop, 120); render();
+  }), 400);
 }
 function endReach() { stopLoop(); clearTimers(); trial.E = { ...hand }; trial.ms = performance.now() - trial.t0; state = 'answer'; render(); }
-const deg = p => Math.atan2(p.x, p.y) * 180 / Math.PI;
+// 位置で計算する（角度は使わない）
+//   引っぱり = 止めた位置E を「道具T→本物P」の線に投影した割合（T=0、P=1）
+//   届いた深さ = E の前方向の成分（S=0、P=1）。0.6未満は「途中で止めた」
 function answer(v) {
   const t = trial; t.noticed = v;
-  const aT = deg(t.T), aP = deg(t.P), aE = deg(t.E);
-  t.devT = aE - aT; t.pull = t.tool === 'M' ? null : (aE - aT) / (aP - aT);
-  history.push({ cond: t.cond, ang: t.ang, tool: t.tool, pull: t.pull, devT: t.devT, reach: Math.hypot(t.E.x, t.E.y), noticed: v, ms: Math.round(t.ms), mode: set.mode, time: Date.now() });
+  const dx = t.P.x - t.T.x, dy = t.P.y - t.T.y, L2 = dx * dx + dy * dy;
+  t.pull = L2 > 1e-9 ? ((t.E.x - t.T.x) * dx + (t.E.y - t.T.y) * dy) / L2 : null;
+  t.depth = t.E.y;
+  t.errT = Math.hypot(t.E.x - t.T.x, t.E.y - t.T.y);
+  t.errP = Math.hypot(t.E.x - t.P.x, t.E.y - t.P.y);
+  t.valid = t.depth >= 0.6;
+  history.push({ cond: t.cond, ang: t.ang, tool: t.tool, pull: t.pull, depth: t.depth, errT: t.errT, errP: t.errP, valid: t.valid, noticed: v, ms: Math.round(t.ms), mode: set.mode, time: Date.now() });
   if (set.mode === 'auto' && plan) { plan.i++; if (plan.i >= plan.blocks[plan.b].trials.length) { plan.b++; plan.i = 0; } }
   last = t; trial = null; state = planDone() && set.mode === 'auto' ? 'done' : 'result';
   save(); showResult(); unlock(); sync(); render();
 }
 
 // ===== 結果 =====
+const pct = v => `${Math.round(v * 100)}`;
 function showResult() {
   const t = last, tl = TOOLS[t.tool], ans = { yes: 'ずれていた', no: 'ずれていない', unsure: 'わからない' }[t.noticed];
-  $('rBig').innerHTML = t.pull === null ? `${Math.abs(t.devT).toFixed(0)}°<small>ずれ（真ん中＝本物）</small>` : `${Math.round(t.pull * 100)}%<small>本物Pへ引っぱられた</small>`;
-  $('rTxt').innerHTML = `${tl.name}（${tl.pos}） ／ ${t.ang}° ／ ${CMAP[t.cond].name}<br>答え：<b>${ans}</b>` +
-    (t.pull !== null && t.pull >= 0.7 && t.noticed === 'no' ? '　<b style="color:var(--p)">→ 気づかず本物へ</b>' : '');
+  if (!t.valid) $('rBig').innerHTML = `途中で止めた<small>本物までの距離の ${pct(t.depth)}% で止めた（まとめに入れない）</small>`;
+  else if (t.pull === null) $('rBig').innerHTML = `本物から ${pct(t.errP)}<small>（スタート→本物 を100として）</small>`;
+  else $('rBig').innerHTML = `${pct(t.pull)}%<small>本物Pへ引っぱられた</small>`;
+  $('rTxt').innerHTML = `${tl.name}（${tl.pos}） ／ ${t.ang}° ／ ${CMAP[t.cond].name}<br>` +
+    `止めた位置：${tl.name}から ${pct(t.errT)}、本物から ${pct(t.errP)}（スタート→本物＝100）<br>答え：<b>${ans}</b>` +
+    (t.valid && t.pull !== null && t.pull >= 0.7 && t.noticed === 'no' ? '　<b style="color:var(--p)">→ 気づかず本物へ</b>' : '');
   $('res').hidden = false; $('finalBox').hidden = state !== 'done';
 }
 function renderHeat() {
-  const el = $('heat');
-  if (!history.length) { el.innerHTML = '<tr><td class="muted">まだありません</td></tr>'; return; }
-  const angs = [...new Set(history.map(h => h.ang))].sort((a, b) => a - b);
+  const el = $('heat'), hv = history.filter(h => h.valid);
+  if (!hv.length) { el.innerHTML = '<tr><td class="muted">まだありません</td></tr>'; return; }
+  const angs = [...new Set(hv.map(h => h.ang))].sort((a, b) => a - b);
   const cell = (h, isM) => {
     if (!h.length) return '<td style="background:#f8fafc;color:#cbd5e1">—</td>';
     const ans = h.filter(r => r.noticed !== 'unsure'), yes = ans.filter(r => r.noticed === 'yes').length, sub = `<span>${yes}/${ans.length}</span>`;
-    if (isM) return `<td style="background:#f1f5f9"><b>${(h.reduce((s, r) => s + Math.abs(r.devT), 0) / h.length).toFixed(1)}°</b>${sub}</td>`;
+    if (isM) return `<td style="background:#f1f5f9"><b>${pct(h.reduce((s, r) => s + r.errP, 0) / h.length)}</b>${sub}</td>`;
     const m = h.reduce((s, r) => s + r.pull, 0) / h.length, k = clamp(m, 0, 1);
-    return `<td style="background:rgba(79,70,229,${0.08 + 0.8 * k});color:${k > 0.55 ? '#fff' : 'inherit'}"><b>${Math.round(m * 100)}%</b>${sub}</td>`;
+    return `<td style="background:rgba(79,70,229,${0.08 + 0.8 * k});color:${k > 0.55 ? '#fff' : 'inherit'}"><b>${pct(m)}%</b>${sub}</td>`;
   };
-  el.innerHTML = '<tr><th></th>' + angs.map(a => `<th>左右 ${a}°</th>`).join('') + '<th>真ん中</th></tr>' +
-    CONDS.map(c => { const hc = history.filter(r => r.cond === c.id);
+  el.innerHTML = '<tr><th></th>' + angs.map(a => `<th>赤・黄 ${a}°</th>`).join('') + '<th>青（本物）</th></tr>' +
+    CONDS.map(c => { const hc = hv.filter(r => r.cond === c.id);
       return `<tr><th>${c.mark} ${c.name}</th>` + angs.map(a => cell(hc.filter(r => r.ang === a && r.tool !== 'M'), false)).join('') + cell(hc.filter(r => r.tool === 'M'), true) + '</tr>'; }).join('');
 }
 
 // ===== 表示 =====
-const STEP = { cal0: 0, cal1: 0, learnS: 1, learnGo: 1, learnBack: 1, atStart: 2, instruct: 2, reach: 3, answer: 4 };
+const STEP = { calP: 0, calS: 0, learnGo: 1, learnBack: 1, instruct: 2, reach: 3, answer: 4 };
 function specText(sp) { return sp ? `${sp.ang}° ／ ${CMAP[sp.cond].name} ／ ${sp.tool === 'rand' ? '🎲' : TOOLS[sp.tool].name}` : ''; }
 function render() {
   const i = STEP[state] ?? -1;
@@ -395,16 +415,14 @@ function render() {
   bn.classList.toggle('dark', ['instruct', 'reach', 'answer'].includes(state));
   let big = '', small = '';
   if (state === 'idle' || state === 'result') {
-    big = !reg ? 'クリックして準備' : !sp ? '終了' : learned !== sp.ang ? `クリックして道具を覚える（${sp.ang}°）` : state === 'result' ? 'クリックで次へ' : 'クリックで開始';
-    small = !reg ? '机にスタート印と、その真正面に本物を置く' : '';
+    big = !sp ? '終了' : state === 'result' ? 'クリックで次へ' : 'クリックで開始';
+    small = state === 'idle' ? '机にスタート印と、その真正面に本物を置く' : '';
   }
   else if (state === 'done') big = '終了';
-  else if (state === 'cal0') { big = 'スタート印でクリック'; small = note || '右クリック：やめる'; }
-  else if (state === 'cal1') { big = 'まっすぐ前の本物までずらしてクリック'; small = note; }
-  else if (state === 'learnS') { big = 'スタート印でクリック'; small = '目を開けたまま、赤・青・黄に触れて覚える'; }
-  else if (state === 'learnGo') { const id = learnSeq[learnK]; big = `${TOOLS[id].name}（${TOOLS[id].pos}）に触れる`; small = `${learnK + 1} / ${learnSeq.length}`; }
-  else if (state === 'learnBack') { big = 'スタートへ戻す'; small = `${learnK + 1} / ${learnSeq.length}`; }
-  else if (state === 'atStart') { big = 'スタート印でクリック'; small = '声 → 目を閉じて手を伸ばす'; }
+  else if (state === 'calP') { big = '本物に触れてクリック'; small = note || '毎回、本物とスタートで位置を合わせ直します（右クリック：やめる）'; }
+  else if (state === 'calS') { big = 'スタート印に戻してクリック'; small = note || (learned !== learnAng ? `このあと道具の場所を覚えます（${learnAng}°）` : 'このあと声 → 目を閉じて手を伸ばす'); }
+  else if (state === 'learnGo') { const id = learnSeq[learnK]; big = `${TOOLS[id].name}（${TOOLS[id].pos}）に触れる`; small = `覚える ${learnK + 1} / ${learnSeq.length}`; }
+  else if (state === 'learnBack') { big = 'スタートへ戻す'; small = `覚える ${learnK + 1} / ${learnSeq.length}`; }
   else if (state === 'instruct') big = '目を閉じて';
   else if (state === 'reach') { big = '手を伸ばす'; small = '触れたらクリック'; }
   else if (state === 'answer') { big = 'ずれていた？'; small = '左クリック：はい　右クリック：いいえ'; }
@@ -421,31 +439,24 @@ function draw() {
   ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
   if (['instruct', 'reach', 'answer'].includes(state)) return;
   const ox = W / 2, oy = H - 30;
-  // cal1：マウスの生の移動量を、画面に収まるように表示
-  if (state === 'cal0' || state === 'cal1') {
-    const ext = Math.max(400, ...trail.map(p => Math.hypot(p.x, p.y) * 1.15));
-    const sc = Math.min((H - 110) / ext, (W / 2 - 30) / ext), pt = p => [ox + p.x * sc, oy - p.y * sc];
-    ctx.setLineDash([6, 6]); ctx.strokeStyle = '#a7f3d0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, 60); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = '#10b981'; ctx.font = '700 12px system-ui'; ctx.textAlign = 'left'; ctx.fillText('まっすぐ前', ox + 8, 110);
-    if (trail.length > 1) { ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.beginPath(); trail.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); }
-    dotAt(ox, oy, '#111827', 6, 'スタート');
-    { const [x, y] = pt(raw); dotAt(x, y, '#2563eb', 8); }
-    return;
-  }
-  const sc = Math.max(10, Math.min((H - 110) / 1.12, (W - 40) / 2.1)), pt = p => [ox + p.x * sc, oy - p.y * sc];
+  const sc = Math.max(10, Math.min((H - 120) / 1.12, (W - 40) / 2.1)), pt = p => [ox + p.x * sc, oy - p.y * sc];
   ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1;
   [0.25, 0.5, 0.75, 1].forEach(r => { ctx.beginPath(); ctx.arc(ox, oy, r * sc, Math.PI, 2 * Math.PI); ctx.stroke(); });
   dotAt(ox, oy, '#111827', 6, 'スタート');
-  if (!reg) return;
-  const learning = ['learnS', 'learnGo', 'learnBack'].includes(state), sp = nextSpec();
-  const ang = learning ? learnAng : (state === 'result' || state === 'done') && last ? last.ang : sp ? sp.ang : set.mAng;
+  const sp = nextSpec();
+  const ang = busy() ? learnAng : (state === 'result' || state === 'done') && last ? last.ang : sp ? sp.ang : set.mAng;
   const g = geom(ang), r0 = Math.max(8, touchR(ang) * sc);
+  const learning = state === 'learnGo' || state === 'learnBack';
   if (!learning) { const [x, y] = pt(g.P); ctx.fillStyle = '#10b981'; ctx.fillRect(x - 7, y - 7, 14, 14); ctx.font = '700 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText('本物', x, y + 22); }
   ['A', 'M', 'B'].forEach(id => { const cur = state === 'learnGo' && learnSeq[learnK] === id, [x, y] = pt(g[id]);
     ctx.beginPath(); ctx.arc(x, y, cur ? r0 + 4 : r0, 0, 7); if (cur) { ctx.fillStyle = TOOLS[id].color + '55'; ctx.fill(); }
     ctx.lineWidth = 3; ctx.strokeStyle = TOOLS[id].color; ctx.stroke();
     ctx.fillStyle = TOOLS[id].color; ctx.font = '700 12px system-ui'; ctx.textAlign = 'center'; ctx.fillText(TOOLS[id].name, x, y - r0 - 8); });
-  if ((learning || state === 'atStart') && handKnown) { const [x, y] = pt(hand); dotAt(x, y, '#2563eb', 7); }
+  // マウスの位置：本物でクリックしたあとは「本物からどれだけ動いたか」を前回の物差しで表示
+  let me = null;
+  if (frame) me = hand;
+  else if (state === 'calS' && rawP) { const len = store.get('ar5.len', null); if (len) me = { x: (raw.x - rawP.x) / len, y: 1 + (raw.y - rawP.y) / len }; }
+  if (me) { const [x, y] = pt(me); dotAt(x, y, '#2563eb', 7); }
   if ((state === 'result' || state === 'done') && last) {
     const line = (pts, color, w, dash) => { if (pts.length < 2) return; ctx.setLineDash(dash || []); ctx.lineWidth = w; ctx.strokeStyle = color; ctx.beginPath(); pts.forEach((p, i) => { const [x, y] = pt(p); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); };
     line(last.src, '#a855f7', 3, [6, 4]); line(last.path, '#111827', 2.5);

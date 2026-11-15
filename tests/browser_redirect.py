@@ -185,7 +185,7 @@ with sync_playwright() as p:
     with page.expect_download() as d:page.locator('#exportJson').click()
     d.value.save_as(OUT/'ui21-all.json')
     data=json.loads((OUT/'ui21-all.json').read_text(encoding='utf-8'))
-    check(data['sessions'][0]['config']['interfaceVersion']=='2.1.0' and data['sessions'][0]['config']['targetLabels']=={'A':'A','M':'B','B':'C'},'records preserve the new UI version and legacy-ID to A/B/C mapping')
+    check(data['sessions'][0]['config']['interfaceVersion']=='2.1.1' and data['sessions'][0]['config']['targetLabels']=={'A':'A','M':'B','B':'C'},'records preserve the new UI version and legacy-ID to A/B/C mapping')
     check(len(data['sessions'][0]['attempts'][0]['path'])>20,'trajectory and audio requests survive export')
     check(not errors,'demo has no uncaught browser errors');page.close()
 
@@ -218,6 +218,7 @@ with sync_playwright() as p:
     check(state(page)=='interrupted' and page.evaluate('window.__redirectTest.engine.session.index')==0,'focus loss preserves the assignment')
     page.locator('#nextTrial').click();page.clock.run_for(650);begin(page)
     page.set_viewport_size({'width':1200,'height':700})
+    page.wait_for_function('window.__redirectTest.engine.state==="interrupted" && window.__redirectTest.engine.current.invalidReason==="viewport_changed"')
     check(state(page)=='interrupted' and page.evaluate('window.__redirectTest.engine.current.invalidReason')=='viewport_changed','viewport resize interrupts a reach without advancing its assignment')
     page.reload();check(state(page)=='learn' and not page.locator('#calibrationCheck').is_checked(),'reload restores the plan and requires preparation confirmation')
     check(page.locator('#angle').input_value()=='10' and page.locator('#angle').is_disabled(),'reload restores and locks the original condition choices')
@@ -275,7 +276,7 @@ with sync_playwright() as p:
     page.locator('#testRight').click();page.locator('#confirmAudio').click();page.locator('#startSession').click()
     check(page.locator('#proxyOverlay').get_attribute('hidden') is not None,'real-video learning hides the explicit P label')
     page.screenshot(path=str(OUT/'ui21-camera-learning.png'))
-    page.locator('#operator').click();page.locator('#settingsOpen').click();page.locator('#camSel').select_option('two')
+    page.locator('#operator').click();page.locator('#camSel').select_option('device:two')
     page.wait_for_function('window.__redirectTest.setup.corners.length===0')
     check(page.evaluate('window.__redirectTest.setup.S===null && window.__redirectTest.setup.P===null'),'camera change invalidates the projection and S/P registration')
     check(not errors,'procedural camera flow has no uncaught browser errors');page.close()
@@ -297,6 +298,6 @@ with sync_playwright() as p:
     check('許可' in page.locator('#notice').inner_text() and page.locator('#camStart').is_visible(),'camera denial gives a fix and leaves retry available');page.close()
     browser_version=browser.version;browser.close()
 
-report={'checks':len(CHECKS),'passed':CHECKS,'browser':browser_version,'interface_version':'2.1.0','scope':'synthetic software integration; not a human experiment'}
+report={'checks':len(CHECKS),'passed':CHECKS,'browser':browser_version,'interface_version':'2.1.1','scope':'synthetic software integration; not a human experiment'}
 (OUT/'browser-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(f'ALL {len(CHECKS)} BROWSER CHECKS PASSED',flush=True)

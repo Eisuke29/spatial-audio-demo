@@ -6,6 +6,8 @@
 
 公開版は **<https://eisuke29.github.io/spatial-audio-demo/redirect.html>** から開けます。カメラを使うため、ローカルで試す場合は次のサーバーから開いてください。
 
+2.1.1では準備画面の「カメラ」から自動・背面・前面と、端末内のカメラ名を選べます。iPadで使う場合は、iPadのSafariで公開URLを開いてカメラを許可してください。カメラを切り替えたら位置とシールの色を登録し直します。
+
 ```powershell
 python -m http.server 8765 --bind 127.0.0.1
 ```

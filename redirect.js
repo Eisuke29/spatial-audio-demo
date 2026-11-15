@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const C = window.RedirectCore, $ = id => document.getElementById(id), audio = new window.RedirectAudio();
-  const UI_VERSION = '2.1.0';
+  const UI_VERSION = '2.1.1';
   const TARGETS = { A: { letter: 'A', spoken: 'エー' }, M: { letter: 'B', spoken: 'ビー' }, B: { letter: 'C', spoken: 'シー' } };
   const CONDITION_NAMES = { none: '音なし', 'T-c': '道具に固定', 'W-c': '道具から実物へ', 'P-s': '実物へ誘導', 'P-c': '実物に固定（発展）', 'W-s': '移動＋誘導（発展）', 'T-s': '道具へ誘導（対照）' };
   const TEST = ['localhost', '127.0.0.1'].includes(location.hostname) && new URLSearchParams(location.search).get('test') === '1';
@@ -23,6 +23,7 @@
       setup.tol = C.clamp(Number(setup.tol) || 16, 6, 35);
     } catch { rawRecovery = stored; db = { version: C.VERSION, sessions: [], activeId: null }; storageWarning('保存形式を確認できません。元の内容はJSONに残します。'); }
   }
+  let cameraChoice = typeof db.cameraChoice === 'string' ? db.cameraChoice : 'auto', cameraDevices = [], cameraListGeneration = 0;
   let engine = null, running = false, paused = false, stream = null, cameraPending = false, cameraGeneration = 0, testInput = false;
   let H = null, inverseH = null, marker = null, hand = null, rawHand = null, sampleAt = -Infinity, videoTime = -1;
   let calibrationSamples = [], trackingReason = 'カメラ未接続', lastUiAt = 0, lastSavedAt = 0, lastProcessedAt = 0, lastRenderState = '';
@@ -94,6 +95,7 @@
   }
   function renderSetup() {
     $('setupControls').hidden = running; $('stageButtons').hidden = !running;
+    $('camSel').disabled = running || cameraPending; $('camSel').setAttribute('aria-busy', String(cameraPending)); $('camStop').disabled = cameraPending;
     if (running) return;
     const phase = setupPhase(), actions = $('setupActions'), index = SETUP_ORDER.indexOf(phase), ready = phase === 'ready';
     $('setupBadge').textContent = ready ? '完了' : `${Math.max(0, index)} / 8`;
@@ -127,29 +129,66 @@
   }
   function resetTracking() { marker = rawHand = hand = null; sampleAt = -Infinity; calibrationSamples = []; videoTime = -1; }
   function resetGeometry() { setup.corners = []; setup.body = setup.S = setup.P = null; H = inverseH = null; resetTracking(); $('calibrationCheck').checked = false; $('audioCheck').checked = false; testedSides.clear(); keyboardPoint = null; save(); render(true); }
-  function stopCamera() { cameraGeneration++; invalidate('camera_stopped'); stream?.getTracks().forEach(t => t.stop()); stream = null; video.srcObject = null; resetTracking(); trackingReason = 'カメラ停止中'; $('calibrationCheck').checked = false; render(true); }
-  async function startCamera(id = null, change = false) {
-    if (running || cameraPending) return;
-    cameraPending = true; renderSetup(); const generation = ++cameraGeneration;
+  function renderCameraChoices() {
+    const options = [new Option('自動（背面を優先）', 'auto')];
+    if (navigator.mediaDevices?.getSupportedConstraints?.().facingMode) options.push(new Option('背面カメラ', 'facing:environment'), new Option('前面カメラ', 'facing:user'));
+    if (cameraDevices.length) {
+      const group = document.createElement('optgroup'); group.label = 'この端末のカメラ';
+      cameraDevices.forEach((device, i) => group.append(new Option(device.label || `カメラ ${i + 1}`, `device:${device.deviceId}`)));
+      options.push(group);
+    }
+    $('camSel').replaceChildren(...options);
+    if (![...$('camSel').options].some(o => o.value === cameraChoice)) { const missing = new Option('前回のカメラ（選び直してください）', cameraChoice); missing.disabled = true; $('camSel').append(missing); }
+    $('camSel').value = cameraChoice;
+  }
+  async function refreshCameraChoices() {
+    const generation = ++cameraListGeneration;
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('HTTPSまたはlocalhostで開いてください');
-      const next = await navigator.mediaDevices.getUserMedia({ video: { ...(id ? { deviceId: { exact: id } } : {}), width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      const devices = await navigator.mediaDevices?.enumerateDevices?.();
+      if (generation !== cameraListGeneration) return;
+      cameraDevices = (devices || []).filter(d => d.kind === 'videoinput' && d.deviceId);
+    } catch { /* Camera enumeration is optional; front/back selection and a live stream still work. */ }
+    if (generation === cameraListGeneration) renderCameraChoices();
+  }
+  function releaseCamera() {
+    const previous = stream; stream = null; video.srcObject = null;
+    previous?.getTracks().forEach(t => t.stop()); resetTracking(); audio.stop();
+    $('calibrationCheck').checked = false; $('audioCheck').checked = false; testedSides.clear();
+  }
+  function stopCamera() { cameraGeneration++; cameraPending = false; invalidate('camera_stopped'); releaseCamera(); trackingReason = 'カメラ停止中'; render(true); }
+  async function startCamera(choice = cameraChoice, change = false) {
+    if (running || cameraPending) return;
+    cameraChoice = choice; db.cameraChoice = choice; cameraPending = true; testInput = false;
+    const generation = ++cameraGeneration; let next = null;
+    // iPad/Safari may require releasing the active camera before opening another one.
+    releaseCamera(); if (change) { setup.color = null; resetGeometry(); }
+    render(true);
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error(isSecureContext ? 'このブラウザではカメラを使えません。iPadはSafariで、PCはカメラ対応のブラウザで開いてください。' : 'HTTPSまたはlocalhostで開いてください');
+      const selection = choice.startsWith('device:') ? { deviceId: { exact: choice.slice(7) } } : choice.startsWith('facing:') ? { facingMode: { exact: choice.slice(7) } } : { facingMode: { ideal: 'environment' } };
+      next = await navigator.mediaDevices.getUserMedia({ video: { ...selection, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
       if (generation !== cameraGeneration) { next.getTracks().forEach(t => t.stop()); return; }
-      stream?.getTracks().forEach(t => t.stop()); stream = next; video.srcObject = next; await video.play();
-      const track = next.getVideoTracks()[0], settings = track.getSettings(), actualId = settings.deviceId || null;
+      stream = next; video.srcObject = next; await video.play();
+      if (generation !== cameraGeneration) { next.getTracks().forEach(t => t.stop()); return; }
+      const track = next.getVideoTracks()[0], settings = track.getSettings(), actualId = settings.deviceId || (choice.startsWith('device:') ? choice.slice(7) : null);
       const resolutionChanged = setup.cameraWidth && (setup.cameraWidth !== video.videoWidth || setup.cameraHeight !== video.videoHeight);
-      if (change || resolutionChanged || setup.cameraId && actualId && setup.cameraId !== actualId) resetGeometry();
+      if (resolutionChanged || setup.cameraId && actualId && setup.cameraId !== actualId) { setup.color = null; resetGeometry(); }
       setup.cameraId = actualId; setup.cameraWidth = video.videoWidth; setup.cameraHeight = video.videoHeight;
-      const devices = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
-      $('camSel').replaceChildren(...devices.map((d, i) => { const o = new Option(d.label || `カメラ ${i + 1}`, d.deviceId); o.selected = d.deviceId === actualId; return o; })); $('camSel').hidden = devices.length < 2;
       const ratio = video.videoHeight / video.videoWidth || .75; cam.width = 640; cam.height = Math.round(640 * ratio); proc.width = 320; proc.height = Math.round(320 * ratio);
-      track.onended = () => { if (stream === next) { stream = null; resetTracking(); invalidate('camera_ended'); notice('カメラが切れました。接続して開始し直してください。', true); render(true); } };
-      resetTracking(); $('calibrationCheck').checked = false; $('audioCheck').checked = false; testedSides.clear(); notice(''); save(); resize();
-    } catch (e) { trackingReason = 'カメラを開けません'; notice(e.name === 'NotAllowedError' ? 'カメラの使用が許可されていません。ブラウザで許可して開始し直してください。' : e.name === 'NotFoundError' ? 'カメラを接続して、開始し直してください。' : `カメラを開けません：${e.message}`, true); }
-    finally { cameraPending = false; render(true); }
+      const activeStream = next;
+      track.onended = () => { if (stream === activeStream) { releaseCamera(); invalidate('camera_ended'); notice('カメラが切れました。選び直して開始してください。', true); render(true); } };
+      await refreshCameraChoices();
+      if (generation !== cameraGeneration) return;
+      resetTracking(); notice(''); save(); resize();
+    } catch (e) {
+      next?.getTracks().forEach(t => t.stop());
+      if (generation !== cameraGeneration) return;
+      releaseCamera(); trackingReason = 'カメラを開けません';
+      notice(e.name === 'NotAllowedError' ? 'カメラの使用が許可されていません。ブラウザで許可して開始し直してください。' : ['NotFoundError', 'OverconstrainedError'].includes(e.name) ? '選んだカメラが見つかりません。「自動」か、この端末の別のカメラを選んで開始してください。' : e.name === 'NotReadableError' ? 'カメラを開けません。別のアプリで使用中なら閉じて、開始し直してください。' : `カメラを開けません：${e.message}`, true);
+    } finally { if (generation === cameraGeneration) { cameraPending = false; render(true); } }
   }
   function selectCameraPoint(p) {
-    if (running || !stream) return;
+    if (running || cameraPending || !stream) return;
     const phase = setupStep();
     if (phase === 'corners') { setup.corners.push(p); buildH(); }
     if (phase === 'color') {
@@ -170,7 +209,10 @@
     if (e.key === 'Enter' && keyboardPoint) { e.preventDefault(); selectCameraPoint({ ...keyboardPoint }); }
   };
   cam.onblur = () => { keyboardPoint = null; };
-  $('camStart').onclick = () => startCamera(); $('camStop').onclick = () => { $('settingsDialog').close(); stopCamera(); }; $('camSel').onchange = () => { const id = $('camSel').value; $('settingsDialog').close(); startCamera(id, true); };
+  $('camStart').onclick = () => startCamera(); $('camStop').onclick = () => { $('settingsDialog').close(); stopCamera(); };
+  $('cameraPick').onclick = () => { $('settingsDialog').close(); $('camSel').focus({ preventScroll: true }); };
+  $('camSel').onchange = () => { cameraChoice = $('camSel').value; db.cameraChoice = cameraChoice; notice(''); save(); if (stream) startCamera(cameraChoice, true); };
+  navigator.mediaDevices?.addEventListener?.('devicechange', refreshCameraChoices);
   $('resetSetup').onclick = () => { if (!running) { setup.color = null; resetGeometry(); notice(''); } };
   $('tol').value = setup.tol; $('tolValue').textContent = `${setup.tol}°`; $('headBehind').value = setup.headBehind; $('earAbove').value = setup.earAbove;
   $('tol').oninput = () => { setup.tol = Number($('tol').value); $('tolValue').textContent = `${setup.tol}°`; resetTracking(); $('calibrationCheck').checked = false; save(); render(true); };
@@ -209,7 +251,7 @@
       await audio.ensure(Number($('volume').value));
       if (engine && engine.state !== 'finished' && !engine.session.closed) { notice('未完了の記録があります。「続きから」を選んでください。', true); return; }
       const seed = crypto.getRandomValues(new Uint32Array(1))[0], id = `${TEST ? 'test-' : ''}${new Date().toISOString().replace(/[:.]/g, '-')}-${seed.toString(16)}`;
-      engine = new C.Engine(config(), setup, seed, id); engine.session.createdAt = new Date().toISOString(); engine.session.environment = { userAgent: navigator.userAgent, width: innerWidth, height: innerHeight, audio: audio.metadata(), camera: stream?.getVideoTracks()[0]?.getSettings() ?? null, tracking: { width: proc.width, height: proc.height, smoothingMs: 30, freshnessMs: 150, tolerance: setup.tol } };
+      engine = new C.Engine(config(), setup, seed, id); engine.session.createdAt = new Date().toISOString(); engine.session.environment = { userAgent: navigator.userAgent, width: innerWidth, height: innerHeight, audio: audio.metadata(), camera: stream?.getVideoTracks()[0]?.getSettings() ?? null, cameraSelection: cameraChoice, tracking: { width: proc.width, height: proc.height, smoothingMs: 30, freshnessMs: 150, tolerance: setup.tol } };
       engine.enteredAt = now(); paused = false; $('pause').textContent = '一時停止'; notice(''); save(); showParticipant(true); render(true);
     } catch (e) { notice(e.message, true); }
   };
@@ -241,7 +283,7 @@
   function setupInstructions() {
     const phase = setupPhase(), corners = ['手前左', '手前右', '奥右', '奥左'];
     const messages = {
-      camera: ['カメラを開始してください', '机を真上から映します。A4と手が映る位置に固定します。'],
+      camera: ['カメラを開始してください', 'この端末のカメラを選び、机を真上から映します。'],
       corners: [`A4の${corners[setup.corners.length] || '手前左'}の角をクリック`, `${setup.corners.length + 1} / 4 点目。紙は横向きに置きます。`],
       color: ['手のシールをクリック', '鮮やかな色のシールを、映像の中で選びます。'],
       body: ['体の真ん中をクリック', '自分の正面にある、机の手前の縁を選びます。'],
@@ -401,13 +443,13 @@
   }
   function resize() {
     syncConditionPanel(); const r = surface.getBoundingClientRect(), scale = Math.min(r.width / cam.width, r.height / cam.height);
-    cameraView.style.width = `${Math.max(1, cam.width * scale)}px`; cameraView.style.height = `${Math.max(1, cam.height * scale)}px`; viewport = { w: innerWidth, h: innerHeight }; drawScene();
+    cameraView.style.width = `${Math.max(1, cam.width * scale)}px`; cameraView.style.height = `${Math.max(1, cam.height * scale)}px`; drawScene();
   }
   new ResizeObserver(resize).observe(surface);
-  window.addEventListener('resize', () => { if (running && (Math.abs(innerWidth - viewport.w) > 2 || Math.abs(innerHeight - viewport.h) > 2)) invalidate('viewport_changed'); resize(); });
+  window.addEventListener('resize', () => { if (running && (Math.abs(innerWidth - viewport.w) > 2 || Math.abs(innerHeight - viewport.h) > 2)) invalidate('viewport_changed'); viewport = { w: innerWidth, h: innerHeight }; resize(); });
   window.addEventListener('blur', () => { if (running) invalidate('focus_lost'); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { if (running) invalidate('hidden'); else cancelOutput(); save(); } });
-  window.addEventListener('pagehide', () => { cancelOutput(); save(); stream?.getTracks().forEach(t => t.stop()); });
+  window.addEventListener('pagehide', () => { cameraGeneration++; cancelOutput(); save(); stream?.getTracks().forEach(t => t.stop()); });
   function acceptSample(raw, timestamp) {
     if (!C.point(raw)) { hand = rawHand = marker = null; sampleAt = -Infinity; calibrationSamples = []; return; }
     const dt = timestamp - sampleAt, alpha = Number.isFinite(dt) ? 1 - Math.exp(-Math.max(dt, 1) / 30) : 1;
@@ -431,5 +473,5 @@
       feed(p, timestamp = now()) { acceptSample(p, timestamp); if (running && engine) engine.update(hand, timestamp, timestamp, rawHand); render(); },
       render: () => render(true), save, sound: audio, isStable };
   }
-  restorePendingConfig(); buildH(); syncConditionPanel(); renderConfig(); render(true); resize(); requestAnimationFrame(loop); if (engine) save();
+  renderCameraChoices(); refreshCameraChoices(); restorePendingConfig(); buildH(); syncConditionPanel(); renderConfig(); render(true); resize(); requestAnimationFrame(loop); if (engine) save();
 })();

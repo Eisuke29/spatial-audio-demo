@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f3f4f7">
-  <meta name="application-version" content="2.1.0">
+  <meta name="application-version" content="2.1.1">
   <title>聴覚リダイレクション デモ</title>
-  <link rel="stylesheet" href="redirect.css?v=2.1.0">
-  <script src="redirect-core.js?v=2.1.0" defer></script>
-  <script src="redirect-audio.js?v=2.1.0" defer></script>
-  <script src="redirect.js?v=2.1.0" defer></script>
+  <link rel="stylesheet" href="redirect.css?v=2.1.1">
+  <script src="redirect-core.js?v=2.1.1" defer></script>
+  <script src="redirect-audio.js?v=2.1.1" defer></script>
+  <script src="redirect.js?v=2.1.1" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#stageTitle">現在の手順へ</a>
@@ -77,6 +77,7 @@
     <div id="feedback" class="feedback" hidden></div>
     <div class="action-bar">
       <div id="setupControls" class="button-row">
+        <label class="camera-picker" for="camSel"><span>カメラ</span><select id="camSel" name="camera" aria-label="この端末のカメラ"><option value="auto">自動（背面を優先）</option></select></label>
         <button id="camStart" class="primary">カメラを開始</button>
         <div id="audioControls" class="audio-controls" hidden><button id="testLeft">左を聞く</button><button id="testRight">右を聞く</button><label class="volume-label">音量<input id="volume" name="volume" type="range" min="0.05" max="0.7" step="0.01" value="0.25"><output id="volumeValue">25%</output></label></div>
         <div id="setupActions" class="button-row"></div>
@@ -99,7 +100,7 @@
 <dialog id="conditionsDialog" aria-labelledby="conditionsTitle"><div class="dialog-heading"><h2 id="conditionsTitle">条件</h2><button data-close="conditionsDialog">閉じる</button></div><div id="conditionsDialogBody"></div></dialog>
 
 <dialog id="settingsDialog" aria-labelledby="settingsTitle"><div class="dialog-heading"><h2 id="settingsTitle">設定</h2><button data-close="settingsDialog">閉じる</button></div><div class="dialog-tabs" role="tablist" aria-label="設定の種類"><button id="trackingTab" role="tab" aria-controls="trackingSettings" aria-selected="true">追跡</button><button id="recordingTab" role="tab" aria-controls="recordingSettings" aria-selected="false">記録</button></div>
-  <section id="trackingSettings" role="tabpanel" aria-labelledby="trackingTab"><label for="camSel">カメラ</label><select id="camSel" name="camera" aria-label="カメラを選ぶ" hidden></select><button id="camStop" class="subtle" hidden>カメラを停止</button><label for="tol">色の許容幅 <output id="tolValue">16°</output></label><input id="tol" name="tolerance" type="range" min="6" max="35" value="16"><div class="form-pair"><div><label for="headBehind">頭：机の縁より後ろ</label><div class="unit-input"><input id="headBehind" name="headBehind" type="number" inputmode="numeric" min="0" max="50" value="15"><span>cm</span></div></div><div><label for="earAbove">耳：追跡面より上</label><div class="unit-input"><input id="earAbove" name="earAbove" type="number" inputmode="numeric" min="5" max="100" value="35"><span>cm</span></div></div></div><p class="hint">紙とシールは同じ高さに。カメラ・紙を動かしたら準備をやり直してください。</p></section>
+  <section id="trackingSettings" role="tabpanel" aria-labelledby="trackingTab"><button id="cameraPick" class="subtle">カメラを選ぶ</button><button id="camStop" class="subtle" hidden>カメラを停止</button><label for="tol">色の許容幅 <output id="tolValue">16°</output></label><input id="tol" name="tolerance" type="range" min="6" max="35" value="16"><div class="form-pair"><div><label for="headBehind">頭：机の縁より後ろ</label><div class="unit-input"><input id="headBehind" name="headBehind" type="number" inputmode="numeric" min="0" max="50" value="15"><span>cm</span></div></div><div><label for="earAbove">耳：追跡面より上</label><div class="unit-input"><input id="earAbove" name="earAbove" type="number" inputmode="numeric" min="5" max="100" value="35"><span>cm</span></div></div></div><p class="hint">紙とシールは同じ高さに。カメラ・紙を動かしたら準備をやり直してください。</p></section>
   <section id="recordingSettings" role="tabpanel" aria-labelledby="recordingTab" hidden><label for="knowledge">体験する人</label><select id="knowledge" name="knowledge"><option value="known">仕組みを知っている</option><option value="participant">初めて体験する参加者</option></select><label for="equipment">機材メモ（任意）</label><textarea id="equipment" name="equipment" rows="3" maxlength="500" autocomplete="off" placeholder="例：有線イヤホン…"></textarea><p class="hint">座標・回答・メモはこのブラウザに保存します。</p></section>
 </dialog>
 
